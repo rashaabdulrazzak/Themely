@@ -9,11 +9,7 @@ const SideBar = () =>{
     const [visible, setVisible] = useState(false);
 
     const items = [
-        {
-            label: 'Products',
-            icon: 'pi pi-home',
-             url: "/products",
-        },
+       
         {
             label: 'Users',
             icon: 'pi pi-home',

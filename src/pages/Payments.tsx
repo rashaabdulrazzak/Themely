@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -22,6 +22,7 @@ const initialPayments: Payment[] = [
 
 export default function Payments() {
     const [payments, setPayments] = useState<Payment[]>(initialPayments);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [dialogVisible, setDialogVisible] = useState(false);
     const [isEdit, setIsEdit] = useState(false);

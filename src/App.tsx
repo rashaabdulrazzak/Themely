@@ -1,5 +1,3 @@
-import viteLogo from '/vite.svg'
-import React from 'react';
 import LayoutComponent from './routes/Layout/LayoutComponent';
 import './styles/App.scss'
 import { PrimeReactProvider } from 'primereact/api';
