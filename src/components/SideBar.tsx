@@ -12,15 +12,35 @@ const SideBar = () =>{
         {
             label: 'Products',
             icon: 'pi pi-home',
+             url: "/products",
         },
         {
-            label: 'Orders',
+            label: 'Users',
+            icon: 'pi pi-home',
+             url: "/users",
+        },
+        {
+            label: 'Canvases',
             icon: 'pi pi-car',
+             url: "/canvases",
         },
         {
-            label: 'Stores',
+            label: 'Downloads',
             icon: 'pi pi-cloud',
-        }
+            url: "/downloads",
+        },
+        {
+            label: 'Payments',
+            icon: 'pi pi-cloud',
+            url: "/payments",
+        },
+        {
+            label: 'Reviews',
+            icon: 'pi pi-cloud',
+             url: "/reviews",
+        },
+       
+
     ];
     const customHeader = (
         <div className="flex align-items-center gap-2">

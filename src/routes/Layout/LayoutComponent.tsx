@@ -6,6 +6,12 @@ import "primereact/resources/themes/lara-light-teal/theme.css";
 import 'primereact/resources/primereact.min.css'; 
 import 'primeicons/primeicons.css';
 import Home from '../../pages/Home';
+import Products from '../../pages/Products';
+import Reviews from '../../pages/Reviews';
+import Users from '../../pages/Users';
+import Downloads from '../../pages/Downloads';
+import Canvases from '../../pages/Canvases';
+import Payments from '../../pages/Payments';
 import Login from '../../pages/Login';
 
 const LayoutComponent = () => {
@@ -19,6 +25,13 @@ const LayoutComponent = () => {
       <Routes>
       <Route  path='/login' element={<Login/>}></Route>
       <Route path='/' element={<Home/>}></Route>
+        <Route path="/products" element={<Products />}></Route>
+        <Route path="/reviews" element={<Reviews />}></Route>
+        <Route path="/users" element={<Users />}></Route>
+        <Route path="/canvases" element={<Canvases />}></Route>
+        <Route path="/downloads" element={<Downloads />}></Route>
+        <Route path="/payments" element={<Payments />}></Route>
+
       </Routes>
       </main>
     </div>
