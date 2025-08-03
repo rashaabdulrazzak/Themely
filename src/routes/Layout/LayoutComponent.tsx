@@ -1,5 +1,4 @@
-import React from 'react';
-import { BrowserRouter as Router , Routes, Route, useLocation } from 'react-router-dom';
+import {  Routes, Route, useLocation } from 'react-router-dom';
 import NavBar from '../../components/NavBar';
 import'../../styles/global.css'
 import "primereact/resources/themes/lara-light-teal/theme.css";

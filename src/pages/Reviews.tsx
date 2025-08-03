@@ -22,7 +22,7 @@ const initialReviews: Review[] = [
 
 export default function Reviews() {
     const [reviews, setReviews] = useState<Review[]>(initialReviews);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    
     const [selectedReview, setSelectedReview] = useState<Review | null>(null);
     const [dialogVisible, setDialogVisible] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
@@ -53,6 +53,8 @@ export default function Reviews() {
             setReviews([...reviews, form]);
         }
         setDialogVisible(false);
+        setForm({ id: 0, reviewer: "", comment: "", rating: 1 });
+        console.log(selectedReview)
     };
 
     const deleteReview = (review: Review) => {

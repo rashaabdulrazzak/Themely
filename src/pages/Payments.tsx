@@ -22,7 +22,6 @@ const initialPayments: Payment[] = [
 
 export default function Payments() {
     const [payments, setPayments] = useState<Payment[]>(initialPayments);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [dialogVisible, setDialogVisible] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
@@ -44,6 +43,7 @@ export default function Payments() {
         setForm(payment);
         setIsEdit(true);
         setDialogVisible(true);
+        setSelectedPayment(payment);
     };
 
     const hideDialog = () => {
