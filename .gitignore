@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+ProductsContainer.tsx.test
+Products.tsx.tst
