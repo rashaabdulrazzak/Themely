@@ -1,0 +1,56 @@
+
+$primary-color:red;
+$secondary-color: #0d6e4c;
+
+.p-sidebar-left .p-sidebar{
+    width: 16rem !important;
+}
+.Navbar{
+        height: 4rem !important;
+}
+.p-panelmenu .p-panelmenu-header .p-panelmenu-header-content .p-panelmenu-header-link{
+color: black;
+}
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #dadada;
+    height: 40rem;
+    width: 30rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    background-color: #fff;
+  }
+  
+  .login-form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: $primary-color;
+  }
+  
+  
+  
+  .login-form {
+    width: 300px;
+    margin-top: 20px;
+  }
+  
+  .p-inputgroup {
+    margin-bottom: 15px;
+  }
+  
+  .p-inputgroup-addon {
+    background-color: $primary-color;
+    color: #fff;
+    border: 1px solid $primary-color;
+  }
+  
+  .p-inputtext {
+    width: 100%;
+  }
+  
