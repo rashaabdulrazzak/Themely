@@ -1,12 +1,24 @@
 
-$primary-color:red;
-$secondary-color: #0d6e4c;
-
+$primary-color:#e0edf4;
+$secondary-color: #d69db6;
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+main {
+ padding: 25px;
+}
 .p-sidebar-left .p-sidebar{
-    width: 16rem !important;
+   width: 16rem !important;
 }
 .Navbar{
-        height: 4rem !important;
+  height: 4rem !important;
 }
 .p-panelmenu .p-panelmenu-header .p-panelmenu-header-content .p-panelmenu-header-link{
 color: black;
@@ -24,13 +36,13 @@ color: black;
     background-color: #fff;
   }
   
-  .login-form-container {
+ .login-form-container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
-    background-color: $primary-color;
+    margin-bottom: 10px;
+    background-color: white;
   }
   
   
@@ -46,11 +58,118 @@ color: black;
   
   .p-inputgroup-addon {
     background-color: $primary-color;
-    color: #fff;
+    color: #595555;
     border: 1px solid $primary-color;
   }
   
   .p-inputtext {
     width: 100%;
   }
-  
+  // side bar panel override
+  .p-panelmenu .p-panelmenu-header .p-panelmenu-header-content{
+    border: none !important;
+    background-color: transparent !important;
+  }
+  .p-panelmenu .p-panelmenu-header .p-panelmenu-header-content .p-panelmenu-header-link:hover{
+    color: black !important;
+    background-color:  $primary-color !important;
+  }
+  .p-panelmenu .p-panelmenu-header .p-panelmenu-header-content .p-panelmenu-header-link{
+   
+     border: none !important;
+    background-color: transparent !important;
+  }
+  // 
+  .login-btn {
+    color: #595555;
+    background: $primary-color;
+    border: 1px solid $primary-color;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    border-radius: 3px;
+}
+
+/* .p-menubar {
+    background-color: $primary-color;
+    color: #595555  !important;
+} */
+.menu-btn {
+    color: #595555;
+    background: $primary-color;
+    border: 1px solid $primary-color;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    border-radius: 3px;
+}
+.edit-btn{
+  background-color: transparent;
+    color: #a6d5fa;
+    border-color: transparent;
+}
+.add-btn {
+    color: #ffffff;
+    background: $secondary-color;
+    border: 1px solid $secondary-color;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    border-radius: 3px;
+}
+.add-btn:hover {
+    background-color: rgba($secondary-color, 90%);
+    color: #ffffff;
+    border-color: rgba($secondary-color, 90%);
+}
+.add-btn:focus {
+    outline: 0 none;
+    outline-offset: 0;
+    box-shadow: 0 0 0 0.2rem rgba($secondary-color, 90%);
+}
+.cancel-btn {
+    color: #ffffff;
+    background: #c4c7c9;
+    border: 1px solid #c4c7c9;
+}
+.save-btn {
+    color: #595555;
+    background: $primary-color;
+    border: 1px solid $primary-color;
+}
+.save-btn:hover {
+    background-color: rgba($primary-color, 90%);
+    color: #595555;
+    border-color: rgba($primary-color, 90%);
+}
+
+.p-rating .p-rating-item.p-rating-item-active .p-rating-icon {
+    color: $secondary-color;
+}
+
+.p-button-edit {
+    color: #b7ceda;
+     background: white ;
+     border: 2px solid $primary-color; 
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    border-radius: 50%;
+}
+.p-button-delete {
+    color: red;
+     background: white; 
+     border: 1px solid red; 
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    border-radius: 50%;
+}
+.p-menu .p-menuitem:not(.p-highlight):not(.p-disabled) > .p-menuitem-content:hover {
+    color: #495057;
+    background: #e3f2fd;
+}
+.p-menu .p-menuitem:not(.p-highlight):not(.p-disabled).p-focus > .p-menuitem-content {
+    color: #495057;
+    background: #e3f2fd;
+}

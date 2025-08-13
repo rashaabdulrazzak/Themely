@@ -20,24 +20,33 @@ const navigate = useNavigate()
             },
             {
                 label: 'Log Out',
-                icon: 'pi pi-step-backward-alt',
+                icon: 'pi pi pi-sign-out',
                 command:() => navigate('/login')
             }
         ]
     }
 ];
     const start = <SideBar/>
-    const end = (
-        < div className="flex flex-nowrap ">
-            <i className="pi pi-bell mx-2 mt-3"  style={{ cursor: 'pointer' }}></i>
-            <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" className="mx-2" 
-            onClick={(event) => menuLeft.current.toggle(event)}  shape="circle" style={{cursor:'pointer'}} />
-            <h3 className="mt-2 mr-2 font-bold	">Rasha</h3>
+const end = (
+  <div className="flex items-center space-x-3 pr-6 ml-6" >
+    <i
+      className="pi pi-bell text-lg cursor-pointer"
+    ></i>
 
-      </div>
-    );
+    <Avatar
+      image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+      className="cursor-pointer w-10 h-10"
+      onClick={(event) => menuLeft.current.toggle(event)}
+      shape="circle"
+    />
+
+    {/* <h3 className="font-bold">Rasha</h3> */}
+  </div>
+);
+
+
     return (
-        <div className="card">
+        <div className="card ">
             <Menu model={items} popup ref={menuLeft} id="popup_menu_left" />
             <Menubar start={start} end={end} className="Navbar" />
         </div>

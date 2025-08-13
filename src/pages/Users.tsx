@@ -64,7 +64,7 @@ const Users: React.FC = () => {
 
     const actionBodyTemplate = (rowData: User) => (
         <div>
-            <Button icon="pi pi-pencil" className="p-button-text p-button-sm mr-2" onClick={() => openEdit(rowData)} />
+            <Button icon="pi pi-pencil" className="p-button-text p-button-sm edit-btn mr-2" onClick={() => openEdit(rowData)} />
             <Button icon="pi pi-trash" className="p-button-text p-button-sm p-button-danger" onClick={() => deleteUser(rowData)} />
         </div>
     );
@@ -73,7 +73,7 @@ const Users: React.FC = () => {
         <div className="p-6">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">Users</h2>
-                <Button label="Add User" icon="pi pi-plus" onClick={openNew} />
+                <Button label="Add User" className='add-btn' icon="pi pi-plus" onClick={openNew} />
             </div>
             <DataTable value={users} className="shadow rounded-lg">
                 <Column field="id" header="ID" />
@@ -113,8 +113,9 @@ const Users: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex justify-content-end mt-4">
-                    <Button label="Cancel" icon="pi pi-times" className="p-button-text mr-2" onClick={hideDialog} />
-                    <Button label="Save" icon="pi pi-check" className="p-button-primary" onClick={saveUser} />
+                    <Button label="Save" icon="pi pi-check" className=" p-button-sm save-btn mr-2" onClick={saveUser} />
+                    <Button label="Cancel" icon="pi pi-times"className="p-button-sm cancel-btn"  onClick={hideDialog} />
+                    
                 </div>
             </Dialog>
         </div>

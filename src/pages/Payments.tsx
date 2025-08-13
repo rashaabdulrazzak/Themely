@@ -67,7 +67,7 @@ export default function Payments() {
         <div className="flex gap-2">
             <Button
                 icon="pi pi-pencil"
-                className="p-button-rounded p-button-info p-button-sm"
+                className="p-button-rounded p-button-info p-button-sm edit-btn "
                 onClick={() => openEdit(rowData)}
             />
             <Button

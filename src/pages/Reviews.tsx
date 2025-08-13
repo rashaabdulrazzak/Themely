@@ -3,6 +3,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
+import { Rating } from 'primereact/rating';
 import { InputText } from "primereact/inputtext";
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
@@ -34,6 +35,9 @@ export default function Reviews() {
         rating: 1,
     });
 
+     const ratingBodyTemplate = (review: Review) => {
+        return <Rating value={review.rating} readOnly cancel={false} />;
+    };
     const openNew = () => {
         setForm({ id: Date.now(), reviewer: "", comment: "", rating: 1 });
         setIsEdit(false);
@@ -63,8 +67,8 @@ export default function Reviews() {
 
     const reviewDialogFooter = (
         <div>
-            <Button label="Save" icon="pi pi-check" onClick={saveReview} className="p-button-sm p-button-success mr-2" />
-            <Button label="Cancel" icon="pi pi-times" onClick={() => setDialogVisible(false)} className="p-button-sm p-button-secondary" />
+            <Button label="Save" icon="pi pi-check" onClick={saveReview} className="p-button-sm save-btn mr-2" />
+            <Button label="Cancel" icon="pi pi-times" onClick={() => setDialogVisible(false)} className="p-button-sm cancel-btn" />
         </div>
     );
 
@@ -72,18 +76,18 @@ export default function Reviews() {
         <div className="p-6">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">Reviews</h2>
-                <Button label="Add Review" icon="pi pi-plus" onClick={openNew} className="p-button-sm p-button-primary" />
+                <Button label="Add Review" icon="pi pi-plus" onClick={openNew} className="p-button-sm p-button-primary add-btn" />
             </div>
             <DataTable value={reviews} selectionMode="single" onSelectionChange={e => setSelectedReview(e.value)} className="shadow rounded">
                 <Column field="reviewer" header="Reviewer" />
                 <Column field="comment" header="Comment" />
-                <Column field="rating" header="Rating" />
+                <Column field="rating" header="Rating" body={ratingBodyTemplate} />
                 <Column
                     header="Actions"
                     body={rowData => (
                         <div className="flex gap-2">
-                            <Button icon="pi pi-pencil" className="p-button-sm p-button-warning" onClick={() => openEdit(rowData)} />
-                            <Button icon="pi pi-trash" className="p-button-sm p-button-danger" onClick={() => deleteReview(rowData)} />
+                            <Button icon="pi pi-pencil" className="p-button-sm  edit-btn" onClick={() => openEdit(rowData)} />
+                            <Button icon="pi pi-trash" className="p-button-text p-button-sm p-button-danger" onClick={() => deleteReview(rowData)} />
                         </div>
                     )}
                 />
