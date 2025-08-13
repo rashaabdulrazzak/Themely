@@ -31,7 +31,7 @@ const Canvases: React.FC = () => {
     const [editDialog, setEditDialog] = useState(false);
     const [addDialog, setAddDialog] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
-    const dt = useRef<DataTable>(null);
+    const dt = useRef<DataTable<Canvas>>(null);
 
     const openEditDialog = (canvas: Canvas) => {
         setSelectedCanvas({ ...canvas });
@@ -117,17 +117,17 @@ const Canvases: React.FC = () => {
                     />
                 </div>
 
-                <DataTable 
-                    ref={dt}
-                    value={canvases} 
-                    className="p-datatable-gridlines p-datatable-hoverable" 
-                    responsiveLayout="scroll"
-                    rowHover
-                    stripedRows
-                    paginator
-                    rows={5}
-                    globalFilter={globalFilter}
-                >
+               <DataTable<Canvas>
+                ref={dt}
+                value={canvases} 
+                className="p-datatable-gridlines p-datatable-hoverable" 
+                responsiveLayout="scroll"
+                rowHover
+                stripedRows
+                paginator
+                rows={5}
+                globalFilter={globalFilter}
+            >
                     <Column field="id" header="ID" sortable />
                     <Column field="name" header="Name" sortable filter filterPlaceholder="Search by name" />
                     <Column field="user" header="User" sortable filter filterPlaceholder="Filter by user" />
