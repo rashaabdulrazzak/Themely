@@ -17,11 +17,7 @@ type Canvases = {
     status: string;
 };
 
-const defaultUser = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    role: 'Admin'
-};
+
 
 const initialCanvases: Canvases[] = [
     { id: 1, title: 'Canvas One', created: '2024-06-01', status: 'Active' },
