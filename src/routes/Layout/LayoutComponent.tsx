@@ -11,6 +11,7 @@ import Downloads from '../../pages/Downloads';
 import Canvases from '../../pages/Canvases';
 import Payments from '../../pages/Payments';
 import Login from '../../pages/Login';
+import Templates from '../../pages/Templates';
 
 const LayoutComponent = () => {
   const location = useLocation()
@@ -26,6 +27,7 @@ const LayoutComponent = () => {
         <Route path="/reviews" element={<Reviews />}></Route>
         <Route path="/users" element={<Users />}></Route>
         <Route path="/canvases" element={<Canvases />}></Route>
+        <Route path="/templates" element={<Templates />}></Route>
         <Route path="/downloads" element={<Downloads />}></Route>
         <Route path="/payments" element={<Payments />}></Route>
 

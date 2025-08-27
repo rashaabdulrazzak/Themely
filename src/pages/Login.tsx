@@ -20,7 +20,9 @@ const Login = () => {
     initialValues: new LoginDTO(),
     validateOnChange: true,
     validationSchema:validationSchema,
+    
     onSubmit: async () => {
+      console.log("loginform.",loginform.values);
       await authLogin(loginform.values);
     },
   });
@@ -29,7 +31,6 @@ const Login = () => {
     <div className="flex flex-nowrap login-form-container">
     <form className="" onSubmit={loginform.handleSubmit}>
       <div className="login-container">
-      {/* <h1 className="font-bold">Welcome in DOSHTU</h1> */}
         <h1 className="font-bold">Themely Login</h1>
         <div className="login-form">
         <small className="p-error">{loginform.errors.email}</small>

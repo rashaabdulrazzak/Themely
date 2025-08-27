@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
@@ -9,6 +9,7 @@ import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
+import { getCanvases, getTemplates } from '../services';
 
 type Canvases = {
     id: number;
@@ -79,7 +80,15 @@ const Downloads: React.FC = () => {
         setEditDialog(false);
         setSelectedCanvas(null);
     };
-
+ useEffect(() => {
+        // Fetch canvases from the API
+        getTemplates().then(response => {
+            console.log(response.data);
+            setCanvases(response.data);
+        }).catch(error => {
+            console.error('Error fetching canvases:', error);
+        });
+    }, []);
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             {/* User Info */}

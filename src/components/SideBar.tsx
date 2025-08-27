@@ -21,6 +21,11 @@ const SideBar = () =>{
              url: "/canvases",
         },
         {
+            label: 'Templates',
+            icon: 'pi pi-image',
+             url: "/templates",
+        },
+        {
             label: 'Downloads',
             icon: 'pi pi-download',
             url: "/downloads",

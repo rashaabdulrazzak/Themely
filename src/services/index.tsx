@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'localhost:3000/api',
+  baseURL: 'https://server.thimly.com/api/v1',
   headers: {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('token') : ''}`,
@@ -11,20 +11,21 @@ const api = axios.create({
 
 // Auth
 export const authRegister = (registerData:any) => {
-  return api.post('/retailers/auth/register',registerData);
+  return api.post('/auth/register',registerData);
 };
 
 export const authLogin = (loginData:any) => {
-  return api.post('/retailers/auth/login', loginData);
+  return api.post('/auth/login', loginData);
  
 };
 
-export const forgotPassword = (email:any) => {
-  return api.post('/retailers/auth/forgot_password',email);
-};
 
-export const resetPassword = (resetData:any) => {
-  return api.post('/retailers/auth/reset_password',resetData);
-};
+export const getTemplates=() => {
+  return api.get('/template/all');
+}
+
+export const getCanvases=() => {
+  return api.get('/canvases');
+}
 
 export default api;
