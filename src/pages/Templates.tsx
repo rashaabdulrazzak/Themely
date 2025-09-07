@@ -59,9 +59,20 @@ const [totalRecords, setTotalRecords] = useState(0);
 
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
- const imageBodyTemplate = (template: Template) => {
-        return <img src={`${template.image}`} alt={template.image} className="w-6rem shadow-2 border-round" />;
-    };
+const imageBodyTemplate = (template: Template) => {
+  const host = "https://server.thimly.com"; // make sure this is the real host
+  const src = `${host}/uploads/${encodeURIComponent(template.image)}`;
+  return (
+    <img
+      src={src}
+      alt={template.name ?? template.image}
+      className="w-6rem shadow-2 border-round"
+      crossOrigin="anonymous" // harmless unless you enable CORS on the server
+      loading="lazy"
+    />
+  );
+};
+
 
 
   const priceBody = (row: Template) => <span className="font-medium">{formatCurrency(row.price)}</span>;

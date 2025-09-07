@@ -9,7 +9,7 @@ import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-import { getCanvases, getTemplates } from '../services';
+import { getCanvases, getDownloads, getTemplates } from '../services';
 
 type Canvases = {
     id: number;
@@ -82,7 +82,7 @@ const Downloads: React.FC = () => {
     };
  useEffect(() => {
         // Fetch canvases from the API
-        getTemplates().then(response => {
+        getDownloads().then(response => {
             console.log(response.data);
             setCanvases(response.data);
         }).catch(error => {

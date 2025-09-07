@@ -25,11 +25,18 @@ const initialCanvases: Canvas[] = [
     { id: 3, name: 'Canvas Three', user: 'Alice Johnson', lastModified: '2024-06-03' },
 ];
 
+const sampleCanvases: Canvas[] = [
+    { id: 1, name: 'Canvas One', user: 'John Doe', lastModified: '2024-06-01' },
+    { id: 2, name: 'Canvas Two', user: 'Jane Smith', lastModified: '2024-06-02' },
+    { id: 3, name: 'Canvas Three', user: 'Alice Johnson', lastModified: '2024-06-03' },
+];
+
 const Canvases: React.FC = () => {
     const [canvases, setCanvases] = useState<Canvas[]>(initialCanvases);
     const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
     const [editDialog, setEditDialog] = useState(false);
     const [addDialog, setAddDialog] = useState(false);
+
     const [globalFilter, setGlobalFilter] = useState('');
     const dt = useRef<DataTable<Canvas[]>>(null);
 
@@ -81,6 +88,31 @@ const Canvases: React.FC = () => {
             />
         </div>
     );
+      useEffect(() => {
+    // Fetch templates from API (expects an array of Template)
+    getCanvases()
+      .then((res: any) => {
+        // Accept either res.data or res
+        console.log('Fetched templates:', res.data.pagination.totalItems || res);
+        const data = Array.isArray(res) ? res : res?.data?.data;
+        if (Array.isArray(data) && data.length) {
+            console.log('Fetched templates:', res.data.data || res);
+          setCanvases(data);
+          setTotalRecords(res.data.pagination.totalItems || data.length); 
+
+        } else {
+          // Use sample data if API returns empty or invalid data
+          setCanvases(sampleCanvases);
+        }
+        setLoading(false);
+      })
+      .catch((err: any) => {
+        console.error('Error fetching templates:', err);
+        // Use sample templates on error as a graceful fallback
+        setTemplates(sampleCanvases);
+        setLoading(false);
+      });
+  }, []); // Empty dependency array to run only once
 
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
