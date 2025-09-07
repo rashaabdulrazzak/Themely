@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
+import { getUsers } from '../services';
 
 type User = {
     id: number;
-    name: string;
+    username: string;
     email: string;
     role: string;
 };
@@ -20,9 +21,9 @@ const roleOptions = [
 ];
 
 const defaultUsers: User[] = [
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', role: 'Admin' },
-    { id: 2, name: 'Bob Johnson', email: 'bob@example.com', role: 'User' },
-    { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', role: 'Editor' },
+    { id: 1, username: 'Alice Smith', email: 'alice@example.com', role: 'Admin' },
+    { id: 2, username: 'Bob Johnson', email: 'bob@example.com', role: 'User' },
+    { id: 3, username: 'Charlie Brown', email: 'charlie@example.com', role: 'Editor' },
 ];
 
 const Users: React.FC = () => {
@@ -30,7 +31,36 @@ const Users: React.FC = () => {
     const [dialogVisible, setDialogVisible] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isEdit, setIsEdit] = useState(false);
+      const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);        // current page
+    const [limit, setLimit] = useState(10);     // items per page
+    const [totalRecords, setTotalRecords] = useState(0);
 
+      useEffect(() => {
+        // Fetch templates from API (expects an array of Template)
+        getUsers()
+          .then((res: any) => {
+            // Accept either res.data or res
+            console.log('Fetched templates:', res.data.pagination.totalItems || res);
+            const data = Array.isArray(res) ? res : res?.data?.data;
+            if (Array.isArray(data) && data.length) {
+                console.log('Fetched templates:', res.data.data || res);
+              setUsers(data);
+              setTotalRecords(res.data.pagination.totalItems || data.length); 
+    
+            } else {
+              // Use sample data if API returns empty or invalid data
+              setUsers(defaultUsers);
+            }
+            setLoading(false);
+          })
+          .catch((err: any) => {
+            console.error('Error fetching templates:', err);
+            // Use sample templates on error as a graceful fallback
+            setUsers(defaultUsers);
+            setLoading(false);
+          });
+      }, []); // Empty dependency array to run only once
     const openNew = () => {
         setEditingUser({ id: users.length + 1, name: '', email: '', role: 'User' });
         setIsEdit(false);
@@ -77,7 +107,7 @@ const Users: React.FC = () => {
             </div>
             <DataTable value={users} className="shadow rounded-lg">
                 <Column field="id" header="ID" />
-                <Column field="name" header="Name" />
+                <Column field="username" header="Name" />
                 <Column field="email" header="Email" />
                 <Column field="role" header="Role" />
                 <Column body={actionBodyTemplate} header="Actions" style={{ width: '150px' }} />
@@ -89,7 +119,7 @@ const Users: React.FC = () => {
                         <label htmlFor="name">Name</label>
                         <InputText
                             id="name"
-                            value={editingUser?.name || ''}
+                            value={editingUser?.username || ''}
                             onChange={e => setEditingUser(editingUser ? { ...editingUser, name: e.target.value } : null)}
                         />
                     </div>

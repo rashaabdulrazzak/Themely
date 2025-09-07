@@ -34,4 +34,5 @@ export const authLogin = async (loginData: any) => {
 export const getTemplates = () => api.get('/template/all');
 export const getCanvases = () => api.get('/canvases');
 export const getDownloads = () => api.get('/download');
+export const getUsers = () => api.get('/user');
 export default api;
