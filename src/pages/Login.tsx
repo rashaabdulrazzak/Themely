@@ -1,17 +1,17 @@
 // pages/Login.tsx (or components/Login.tsx)
-import { authLogin } from "../services";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import log from '../assets/log.png'
 import { LoginDTO } from "../modules"
-import { useState } from "react";
 // import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   // const navigate = useNavigate();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const navigate = useNavigate()
 
   // DEV: loosen password rule to allow '123456'
   const validationSchema = Yup.object({
@@ -28,18 +28,13 @@ const Login = () => {
     initialValues: new LoginDTO(),
     validateOnChange: true,
     validationSchema,
-    onSubmit: async (values) => {
-      setServerError(null);
-      try {
-        const data = await authLogin(values);
-        // Optionally store other user info from data here
-        // navigate('/'); // or wherever
-      } catch (err: any) {
-        const msg = err?.response?.data?.message || err?.message || 'Login failed';
-        setServerError(msg);
-      }
+     onSubmit: () => {
+       login(loginform.values);
+      navigate('/home')
     },
   });
+  const { login } = useAuth();
+
 
   return (
     <div className="flex flex-nowrap login-form-container">
@@ -47,7 +42,6 @@ const Login = () => {
         <div className="login-container">
           <h1 className="font-bold">Themely Login</h1>
 
-          {serverError && <small className="p-error">{serverError}</small>}
 
           <div className="login-form">
             <small className="p-error">{loginform.touched.email && loginform.errors.email}</small>

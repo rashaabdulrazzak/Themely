@@ -4,12 +4,18 @@ import { Avatar } from "primereact/avatar";
 import { useRef,  } from "react";
 import { Menu } from "primereact/menu";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 
 const NavBar = () =>{
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const menuLeft = useRef<any>(null);
 const navigate = useNavigate()
+const { logout } = useAuth();
+const logOut = () =>{
+    logout();
+    navigate('/')
+}
  const items = [
     {
         label: 'Rasha',
@@ -21,7 +27,7 @@ const navigate = useNavigate()
             {
                 label: 'Log Out',
                 icon: 'pi pi pi-sign-out',
-                command:() => navigate('/login')
+                 command:() => logOut()
             }
         ]
     }

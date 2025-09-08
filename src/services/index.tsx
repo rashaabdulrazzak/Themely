@@ -1,5 +1,6 @@
 
 import axios from 'axios';
+import { handleError, handleResponse } from './handleResponse';
 //import api from './api';
 console.log('API base URL:', localStorage.getItem('token'));
  const api = axios.create({
@@ -18,7 +19,7 @@ export const authRegister = (registerData: any) =>
   api.post('/auth/register', registerData);
 
 // IMPORTANT: adjust token property name based on your API response
-export const authLogin = async (loginData: any) => {
+/* export const authLogin = async (loginData: any) => {
   const res = await api.post('/auth/login', loginData);
   // Example response shapes — pick the right one for your API:
   // const token = res.data.token;
@@ -29,6 +30,23 @@ export const authLogin = async (loginData: any) => {
 
   localStorage.setItem('token', token);
   return res.data; // return whatever you need (user, roles, etc.)
+}; */
+
+ export const authLogin = async (loginData: any) => {
+  try {
+    const response = await api.post("auth/login", loginData);
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+  }
+}; 
+export const authLogout = async () => {
+  try {
+    const response = await api.post("auth/logout");
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+  }
 };
 
 export const getTemplates = () => api.get('/template/all');
