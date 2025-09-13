@@ -43,9 +43,9 @@ const Users: React.FC = () => {
           .then((res: any) => {
             // Accept either res.data or res
             console.log('Fetched .....:', res.pagination.totalUsers );
-            const data = Array.isArray(res) ? res : res?.data?.data;
+            const data = Array.isArray(res) ? res : res?.data;
             if (Array.isArray(data) && data.length) {
-                console.log('Fetched templates:', res.data.data || res);
+                console.log('Fetched templates:', res.data || res);
               setUsers(data);
               setTotalRecords(res.pagination.totalUsers || data.length); 
                 setPage(res.pagination.page || 1);

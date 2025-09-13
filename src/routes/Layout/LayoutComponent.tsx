@@ -33,11 +33,14 @@ export default function AppRoutes() {
   const { user,token} = useAuth();
   console.log("Current user in AppRoutes:", user, token);
   return (
-    <Routes>
+    <>
+    {token && <NavBar />}
+        <Routes>
       {/* public */}
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
 
       {/* protected (everything inside requires auth) */}
+      
       <Route element={<PrivateRoute />}>
         <Route element={<PrivateLayout />}>
           <Route path="/" element={<Home />} />
@@ -54,5 +57,7 @@ export default function AppRoutes() {
       {/* fallback */}
       <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
     </Routes>
+    </>
+
   );
 }
