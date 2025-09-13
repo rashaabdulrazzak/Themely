@@ -44,3 +44,10 @@ export interface CartItem {
   price: number;
   created_at: Date;
 }
+export interface EmptyData {
+  [key: string]: PropertyEmptyData;
+}
+export interface PropertyEmptyData {
+  image: string;
+  message: string;
+}
