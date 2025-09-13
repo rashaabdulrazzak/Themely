@@ -99,12 +99,12 @@ const imageBodyTemplate = (template: Template) => {
     getTemplates()
       .then((res: any) => {
         // Accept either res.data or res
-        console.log('Fetched templates:', res.data.pagination.totalItems || res);
-        const data = Array.isArray(res) ? res : res?.data?.data;
+        console.log('Fetched templates:', res.pagination.totalItems || res);
+        const data = Array.isArray(res) ? res : res?.data;
         if (Array.isArray(data) && data.length) {
-            console.log('Fetched templates:', res.data.data || res);
+            console.log('Fetched templates:', res.data || res);
           setTemplates(data);
-          setTotalRecords(res.data.pagination.totalItems || data.length); 
+          setTotalRecords(res.pagination.totalItems || data.length); 
 
         } else {
           // Use sample data if API returns empty or invalid data

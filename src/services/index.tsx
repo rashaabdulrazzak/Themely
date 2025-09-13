@@ -81,8 +81,19 @@ export const getUsers = async () => {
     throw error;
   }
 };
+export const getTemplates = async () => {
+  try {
+    console.log("Fetching users...");
+    const response = await api.get('/template/all');
 
-export const getTemplates = () => api.get('/template/all');
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+
+
 export const getCanvases = () => api.get('/canvases');
 export const getDownloads = () => api.get('/download');
 
