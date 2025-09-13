@@ -100,7 +100,7 @@ const Canvases: React.FC = () => {
         if (Array.isArray(data) && data.length) {
             console.log('Fetched templates:', res.data.data || res);
           setCanvases(data);
-          setTotalRecords(res.data.pagination.totalItems || data.length); 
+         //  setTotalRecords(res.data.pagination.totalItems || data.length); 
 
         } else {
           // Use sample data if API returns empty or invalid data
@@ -111,7 +111,7 @@ const Canvases: React.FC = () => {
       .catch((err: any) => {
         console.error('Error fetching templates:', err);
         // Use sample templates on error as a graceful fallback
-        setTemplates(sampleCanvases);
+        setCanvases(sampleCanvases);
         setLoading(false);
       });
   }, []); // Empty dependency array to run only once
