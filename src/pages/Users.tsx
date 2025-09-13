@@ -39,14 +39,17 @@ const Users: React.FC = () => {
       useEffect(() => {
         // Fetch templates from API (expects an array of Template)
         getUsers()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .then((res: any) => {
             // Accept either res.data or res
-            console.log('Fetched templates:', res.data.pagination.totalItems || res);
+            console.log('Fetched .....:', res.pagination.totalUsers );
             const data = Array.isArray(res) ? res : res?.data?.data;
             if (Array.isArray(data) && data.length) {
                 console.log('Fetched templates:', res.data.data || res);
               setUsers(data);
-              setTotalRecords(res.data.pagination.totalItems || data.length); 
+              setTotalRecords(res.pagination.totalUsers || data.length); 
+                setPage(res.pagination.page || 1);
+                setLimit(res.pagination.limit || 10);
     
             } else {
               // Use sample data if API returns empty or invalid data
@@ -54,15 +57,16 @@ const Users: React.FC = () => {
             }
             setLoading(false);
           })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .catch((err: any) => {
-            console.error('Error fetching templates:', err);
-            // Use sample templates on error as a graceful fallback
+            console.error('Error fetching users:', err);
+           
             setUsers(defaultUsers);
             setLoading(false);
           });
       }, []); // Empty dependency array to run only once
     const openNew = () => {
-        setEditingUser({ id: users.length + 1, name: '', email: '', role: 'User' });
+        setEditingUser({ id: users.length + 1, username: '', email: '', role: 'User' });
         setIsEdit(false);
         setDialogVisible(true);
     };
@@ -105,7 +109,16 @@ const Users: React.FC = () => {
                 <h2 className="text-2xl font-bold">Users</h2>
                 <Button label="Add User" className='add-btn' icon="pi pi-plus" onClick={openNew} />
             </div>
-            <DataTable value={users} className="shadow rounded-lg">
+            <DataTable value={users} loading={loading} 
+          totalRecords={totalRecords}
+   rows={10}
+            first={(page - 1) * limit}
+          onPage={(e) => {
+    const newPage = Math.floor(e.first / e.rows) + 1;
+    setPage(newPage);
+    setLimit(e.rows); // in case user changed rows per page
+  }}
+            className="shadow rounded-lg">
                 <Column field="id" header="ID" />
                 <Column field="username" header="Name" />
                 <Column field="email" header="Email" />
@@ -120,7 +133,7 @@ const Users: React.FC = () => {
                         <InputText
                             id="name"
                             value={editingUser?.username || ''}
-                            onChange={e => setEditingUser(editingUser ? { ...editingUser, name: e.target.value } : null)}
+                            onChange={e => setEditingUser(editingUser ? { ...editingUser, username: e.target.value } : null)}
                         />
                     </div>
                     <div className="field mb-3">

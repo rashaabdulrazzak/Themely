@@ -5,7 +5,7 @@ const api = axios.create({
   baseURL: 'https://server.thimly.com/api/v1', // consider making this an absolute URL in dev if needed
   headers: { 'Content-Type': 'application/json' ,
     // Authorization header will be set in the interceptor below
-        Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1MjQ3OTQwLTQ5NDMtNDJkZi04OGRjLWRkYWVhNDMzMzJhYiIsInVzZXJuYW1lIjoic2F3eSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc1NzI1MjYxOSwiZXhwIjoxNzY1MDI4NjE5fQ.IKIwUJvXXoMoHg53221hNbwTzBNGsdrA5VwwLkuH9wk`,
+        Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1MjQ3OTQwLTQ5NDMtNDJkZi04OGRjLWRkYWVhNDMzMzJhYiIsInVzZXJuYW1lIjoic2F3eSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc1NzcxODE3NSwiZXhwIjoxNzY1NDk0MTc1fQ.r4im-Stuiv3IKhgtPhOQuQdpO95fxZbJJG1lQ1cbwmI`,
 
   },
 

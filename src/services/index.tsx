@@ -1,56 +1,90 @@
 
 import axios from 'axios';
 import { handleError, handleResponse } from './handleResponse';
-//import api from './api';
-console.log('API base URL:', localStorage.getItem('token'));
- const api = axios.create({
+
+// Don't bake the token at creation time; it'll get stale.
+const api = axios.create({
   baseURL: 'https://server.thimly.com/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1MjQ3OTQwLTQ5NDMtNDJkZi04OGRjLWRkYWVhNDMzMzJhYiIsInVzZXJuYW1lIjoic2F3eSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc1NzAyNjUxOSwiZXhwIjoxNzY0ODAyNTE5fQ.AmEUW31NzkXQZzYN2YPjfUHba4D_4yIcSPOyp0qUdOc`,
-  },
-}); 
+  headers: { 'Content-Type': 'application/json' },
+});
 
-// Auth
+// 1) Always attach the latest token at request time
+api.interceptors.request.use((config) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  if (token) {
+    config.headers = config.headers ?? {};
+    (config.headers as any).Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
+// Optional: clear token on 401s
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err?.response?.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      delete api.defaults.headers.common.Authorization;
+    }
+    return Promise.reject(err);
+  }
+);
 
-
+// ---------- Auth ----------
 export const authRegister = (registerData: any) =>
   api.post('/auth/register', registerData);
 
-// IMPORTANT: adjust token property name based on your API response
-/* export const authLogin = async (loginData: any) => {
-  const res = await api.post('/auth/login', loginData);
-  // Example response shapes — pick the right one for your API:
-  // const token = res.data.token;
-  // const token = res.data.accessToken;
-  const token = res.data.token ?? res.data.accessToken;
-
-  if (!token) throw new Error('Token not found in response');
-
-  localStorage.setItem('token', token);
-  return res.data; // return whatever you need (user, roles, etc.)
-}; */
-
- export const authLogin = async (loginData: any) => {
+export const authLogin = async (loginData: any) => {
   try {
-    const response = await api.post("auth/login", loginData);
-    return handleResponse(response);
+    // 2) Fix the path: needs a leading slash
+    const response = await api.post('/auth/login', loginData);
+
+    // Your handleResponse persists token when present and returns a merged object
+    const data = handleResponse(response, undefined, 'Post');
+
+    // 3) Immediately update axios default header (helps the very next call)
+    const token = data?.token ?? response?.data?.token ?? response?.data?.accessToken;
+    if (token) {
+      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+    }
+
+    return data;
   } catch (error) {
     handleError(error);
+    throw error;
   }
-}; 
+};
+
 export const authLogout = async () => {
   try {
-    const response = await api.post("auth/logout");
+    const response = await api.post('/auth/logout');
+    const data = handleResponse(response, undefined, 'Post');
+    localStorage.removeItem('token');
+    delete api.defaults.headers.common.Authorization;
+    return data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+
+// ---------- Data ----------
+export const getUsers = async () => {
+  try {
+    // If your backend uses /users (plural), change this accordingly.
+    console.log("Fetching users...");
+    const response = await api.get('/user');
+
     return handleResponse(response);
   } catch (error) {
     handleError(error);
+    throw error;
   }
 };
 
 export const getTemplates = () => api.get('/template/all');
 export const getCanvases = () => api.get('/canvases');
 export const getDownloads = () => api.get('/download');
-export const getUsers = () => api.get('/user');
+
 export default api;
+

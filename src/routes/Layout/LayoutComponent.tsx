@@ -1,50 +1,58 @@
-import {  Routes, Route, useLocation } from 'react-router-dom';
-import NavBar from '../../components/NavBar';
-import'../../styles/global.css'
-import "primereact/resources/themes/lara-light-teal/theme.css";
-import 'primereact/resources/primereact.min.css'; 
-import 'primeicons/primeicons.css';
-import Home from '../../pages/Home';
-import Reviews from '../../pages/Reviews';
-import Users from '../../pages/Users';
-import Downloads from '../../pages/Downloads';
-import Canvases from '../../pages/Canvases';
-import Payments from '../../pages/Payments';
-import Login from '../../pages/Login';
-import Templates from '../../pages/Templates';
-import { useAuth } from '../../AuthContext';
+// AppRoutes.tsx
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import NavBar from "../../components/NavBar";
+import'../../styles/global.css';
+ import "primereact/resources/themes/lara-light-teal/theme.css"; 
+ import 'primereact/resources/primereact.min.css';
+  import 'primeicons/primeicons.css';
+import Home from "../../pages/Home";
+import Reviews from "../../pages/Reviews";
+import Users from "../../pages/Users";
+import Downloads from "../../pages/Downloads";
+import Canvases from "../../pages/Canvases";
+import Payments from "../../pages/Payments";
+import Login from "../../pages/Login";
+import Templates from "../../pages/Templates";
+import PrivateRoute from "../../PrivateRoute";
+import { useAuth } from "../../AuthContext";
 
-const LayoutComponent = () => {
-  // const location = useLocation()
-//     const isLoginPage = location.pathname === '/login';
-          const { user } = useAuth();
+
+
+const PrivateLayout = () => {
+  const { user } = useAuth();
+  console.log("Current user in AppRoutes:", user);
   return (
-    
     <div>
-     {/*  {!isLoginPage && <NavBar />} */}
-      <main>
-         {user && <NavBar />}
-      <Routes>
-        { user ?<>
-        <Route path='/' element={<Home/>}></Route>
-        <Route path="/home" element={<Home />}></Route>
-        <Route path="/reviews" element={<Reviews />}></Route>
-        <Route path="/users" element={<Users />}></Route>
-        <Route path="/canvases" element={<Canvases />}></Route>
-        <Route path="/templates" element={<Templates />}></Route>
-        <Route path="/downloads" element={<Downloads />}></Route>
-        <Route path="/payments" element={<Payments />}></Route>
-        </> : <>
-              <Route  path='/login' element={<Login/>}></Route>
-        <Route  path='*' element={<Login/>}></Route>
-
-        </>}
-      
-
-      </Routes>
-      </main>
+      {user && <NavBar />}
+      <main><Outlet /></main>
     </div>
   );
 };
 
-export default LayoutComponent;
+export default function AppRoutes() {
+  const { user,token} = useAuth();
+  console.log("Current user in AppRoutes:", user, token);
+  return (
+    <Routes>
+      {/* public */}
+      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+
+      {/* protected (everything inside requires auth) */}
+      <Route element={<PrivateRoute />}>
+        <Route element={<PrivateLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/canvases" element={<Canvases />} />
+          <Route path="/templates" element={<Templates />} />
+          <Route path="/downloads" element={<Downloads />} />
+          <Route path="/payments" element={<Payments />} />
+        </Route>
+      </Route>
+
+      {/* fallback */}
+      <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
+    </Routes>
+  );
+}

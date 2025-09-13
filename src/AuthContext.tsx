@@ -1,7 +1,6 @@
 // src/auth/AuthContext.tsx
-import React, { createContext, useContext, useState, type ReactNode } from "react";
+import  { createContext, useContext, useState, type ReactNode } from "react";
 import { authLogin } from "./services";
-import { toast } from "react-toastify";
 
 type User = {
   email: string;
