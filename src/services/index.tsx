@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import axios from 'axios';
 import { handleError, handleResponse } from './handleResponse';
@@ -92,10 +93,21 @@ export const getTemplates = async () => {
     throw error;
   }
 };
+export const getDownloads = async () => {
+  try {
+    console.log("Fetching users...");
+    const response = await api.get('/download');
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
 
 
 export const getCanvases = () => api.get('/canvases');
-export const getDownloads = () => api.get('/download');
+//export const getDownloads = () => api.get('/download');
 
 export default api;
 
