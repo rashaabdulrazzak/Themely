@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef,useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -9,6 +9,7 @@ import { Calendar } from 'primereact/calendar';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
+import { getCanvases } from '../services';
 
 type Canvas = {
     id: number;
@@ -36,6 +37,7 @@ const Canvases: React.FC = () => {
     const [selectedCanvas, setSelectedCanvas] = useState<Canvas | null>(null);
     const [editDialog, setEditDialog] = useState(false);
     const [addDialog, setAddDialog] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const [globalFilter, setGlobalFilter] = useState('');
     const dt = useRef<DataTable<Canvas[]>>(null);
@@ -93,7 +95,7 @@ const Canvases: React.FC = () => {
     getCanvases()
       .then((res: any) => {
         // Accept either res.data or res
-        console.log('Fetched templates:', res.data.pagination.totalItems || res);
+        console.log('Fetched templates:', res);
         const data = Array.isArray(res) ? res : res?.data?.data;
         if (Array.isArray(data) && data.length) {
             console.log('Fetched templates:', res.data.data || res);
@@ -158,6 +160,7 @@ const Canvases: React.FC = () => {
                     rowHover
                     stripedRows
                     paginator
+                    loading={loading}
                     rows={5}
                     globalFilter={globalFilter}
                 >

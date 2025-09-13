@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -97,6 +97,7 @@ const imageBodyTemplate = (template: Template) => {
   useEffect(() => {
     // Fetch templates from API (expects an array of Template)
     getTemplates()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((res: any) => {
         // Accept either res.data or res
         console.log('Fetched templates:', res.pagination.totalItems || res);
@@ -112,7 +113,7 @@ const imageBodyTemplate = (template: Template) => {
         }
         setLoading(false);
       })
-      .catch((err: any) => {
+      .catch((err: unknown) => {
         console.error('Error fetching templates:', err);
         // Use sample templates on error as a graceful fallback
         setTemplates(sampleTemplates);
