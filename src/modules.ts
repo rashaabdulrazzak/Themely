@@ -38,3 +38,18 @@ export type Template = {
   userId: string;
 
 };
+export interface IPagination {
+    total: number;
+    count: number;
+    per_page: number;
+    current_page: number;
+    total_pages: number;
+    has_more: boolean;
+    }
+
+  export  type Canvas = {
+    id: number;
+    name: string;
+    user: string;
+    lastModified: string;
+};

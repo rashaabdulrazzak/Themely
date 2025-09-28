@@ -9,7 +9,7 @@ import { Calendar } from 'primereact/calendar';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-import { getCanvases } from '../services';
+import { deleteCanvas, editCanvas, getCanvases } from '../services';
 
 type Canvas = {
     id: number;
@@ -54,15 +54,40 @@ const Canvases: React.FC = () => {
         setSelectedCanvas(null);
     };
 
-    const handleDelete = (canvas: Canvas) => {
+    const handleDelete = async(canvas: Canvas) => {
         if (window.confirm(`Are you sure you want to delete "${canvas.name}"?`)) {
-            setCanvases(canvases.filter(c => c.id !== canvas.id));
+           
+             const canvastoDdelete = await deleteCanvas((canvas.id).toString());
+
+            console.log("deleted canvas...",canvastoDdelete);
+              setCanvases(canvases.filter(c => c.id !== canvas.id));
         }
     };
 
-    const saveCanvas = () => {
+    const saveCanvas = async () => {
         if (selectedCanvas) {
             if (editDialog) {
+                 try {
+        // --- MODIFICATION START ---
+
+        // 1. Call the real API to edit the canvas
+        const response = await editCanvas(selectedCanvas);
+
+        // 2. Get the updated canvas returned from the server
+        // Your server should respond with the updated object.
+        // With Axios, the JSON response is in the `data` property.
+        const updatedCanvasFromServer = response.data; // Adjust if your server response structure is different
+
+        // 3. Update the local 'canvases' state with the server's data
+        setCanvases(canvases.map(c => 
+          c.id === updatedCanvasFromServer.id ? updatedCanvasFromServer : c
+        ));
+
+        // --- MODIFICATION END ---
+      } catch (error) {
+        console.error("Failed to save canvas:", error);
+        // Optionally, show an error message to the user here
+      }
                 setCanvases(canvases.map(c => c.id === selectedCanvas.id ? selectedCanvas : c));
             } else if (addDialog) {
                 setCanvases([...canvases, { ...selectedCanvas, id: Math.max(...canvases.map(c => c.id)) + 1 }]);

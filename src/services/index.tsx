@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { handleError, handleResponse } from './handleResponse';
-import type { Template } from '../modules';
+import type { Canvas, Template } from '../modules';
 
 // Don't bake the token at creation time; it'll get stale.
 const api = axios.create({
@@ -117,18 +117,8 @@ export const deleteTemplate = async (id:string) => {
     throw error;
   }
 };
-/* export const editTemplate = async (data:Template) => {
-  try {
-    console.log("post template...",data);
-    const response = await api.patch(`/template/${data.id}`,data);
-    console.log("post template...",response);
 
-    return handleResponse(response);
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
-}; */
+
 // This function now accepts an optional imageFile
 export const editTemplate = async (templateData: Template, imageFile: File | null) => {
   console.log('🌐 editTemplate API called');
@@ -187,8 +177,32 @@ export const getDownloads = async () => {
 };
 
 
-
+// canvases
 export const getCanvases = () => api.get('/canvases');
+export const deleteCanvas = async (id:string) => {
+  try {
+    console.log("delete canvas...",id);
+    const response = await api.delete(`/canvases/${id}`);
+    console.log("canvas template...",response);
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+ export const editCanvas = async (data:Canvas) => {
+  try {
+    console.log("post canvas...",data);
+    const response = await api.patch(`/canvases/${data.id}`,data);
+    console.log("post canvas...",response);
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+}; 
 //export const getDownloads = () => api.get('/download');
 export const editTemplateWithFile = async (templateData: Template, imageFile: File | null) => {
   try {
