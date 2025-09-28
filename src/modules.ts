@@ -11,3 +11,30 @@ export class LoginDTO
     email: string = '';
     password: string = '';
 }
+export type Category = 
+  | 'MARRIAGE'
+  | 'BIRTHDAY'
+  | 'GRADUATION'
+  | 'EID'
+  | 'NATIONALDAY'
+  | 'OTHER';
+
+/* export interface Template {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  category: Category;
+  userId: string;
+  createdAt: string;
+  isAdminTemplate: boolean;
+} */
+export type Template = {
+  id: number;
+  name: string;
+  image: string;   // URL
+  price: number;
+  category: Category;
+  userId: string;
+
+};
