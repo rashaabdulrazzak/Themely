@@ -1,150 +1,174 @@
-import  { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
+import { Tag } from "primereact/tag";
+import { getPayments, deletePayment } from "../services"; 
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
 interface Payment {
-    id: number;
-    payer: string;
-    amount: number;
-    date: string;
+  id: string | number;
+  amount: number;
+  status: string;
+  paymentMethod: string;
+  transactionId?: string;
+  notes?: string;
+  created: string;   // derived from createdAt (yyyy-mm-dd)
+  userId?: string | number;
+  user?: string;
 }
 
 const initialPayments: Payment[] = [
-    { id: 1, payer: "John Doe", amount: 120, date: "2024-06-01" },
-    { id: 2, payer: "Jane Smith", amount: 250, date: "2024-06-02" },
+  { id: 1, amount: 120.50, status: "COMPLETED", paymentMethod: "CREDIT", created: "2024-06-01", user: "John Doe", userId: 1 },
+  { id: 2, amount: 250.00, status: "PENDING", paymentMethod: "CREDIT", created: "2024-06-02", user: "Jane Smith", userId: 2 },
 ];
 
-export default function Payments() {
-    const [payments, setPayments] = useState<Payment[]>(initialPayments);
-    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-    const [dialogVisible, setDialogVisible] = useState(false);
-    const [isEdit, setIsEdit] = useState(false);
+const Payments: React.FC = () => {
+  const [rows, setRows] = useState<Payment[]>(initialPayments);
+  const [loading, setLoading] = useState(true);
+  const [editDialog, setEditDialog] = useState(false);
+  const [selected, setSelected] = useState<Payment | null>(null);
 
-    const [form, setForm] = useState<Payment>({
-        id: 0,
-        payer: "",
-        amount: 0,
-        date: "",
-    });
+  // Status options for dropdown (if needed for editing)
+  const statusOptions = [
+    { label: "Pending", value: "PENDING" },
+    { label: "Completed", value: "COMPLETED" },
+    { label: "Failed", value: "FAILED" }
+  ];
 
-    const openNew = () => {
-        setForm({ id: 0, payer: "", amount: 0, date: "" });
-        setIsEdit(false);
-        setDialogVisible(true);
-    };
+  // ---- helpers
+  const getSeverity = (status: string) => {
+    switch (status) {
+      case 'FAILED': return 'danger';
+      case 'COMPLETED': return 'success';
+      case 'PENDING': return 'warning';
+      default: return undefined;
+    }
+  };
 
-    const openEdit = (payment: Payment) => {
-        setForm(payment);
-        setIsEdit(true);
-        setDialogVisible(true);
-        setSelectedPayment(payment);
-    };
+  const statusBodyTemplate = (rowData: Payment) => (
+    <Tag value={rowData.status} severity={getSeverity(rowData.status)} />
+  );
 
-    const hideDialog = () => {
-        setDialogVisible(false);
-    };
+  const amountBodyTemplate = (rowData: Payment) => (
+    <span>${rowData.amount.toFixed(2)}</span>
+  );
 
-    const savePayment = () => {
-        if (isEdit) {
-            setPayments(payments.map(p => (p.id === form.id ? form : p)));
+  const actionBodyTemplate = (rowData: Payment) => (
+    <div className="flex gap-2">
+ 
+      <Button
+        icon="pi pi-trash"
+        className="p-button-text p-button-sm p-button-danger"
+        onClick={() => handleDelete(rowData)}
+        aria-label={`Delete payment ${rowData.id}`}
+      />
+    </div>
+  );
+
+
+
+  const handleDelete = async (p: Payment) => {
+    if (window.confirm(`Are you sure you want to delete payment of $${p.amount}?`)) {
+      try {
+        const deletedPayment = await deletePayment(p.id.toString());
+        console.log("Deleted payment...", deletedPayment);
+        setRows(prev => prev.filter(x => x.id !== p.id));
+      } catch (error) {
+        console.error("Error deleting payment:", error);
+        // Handle error - show toast or error message
+      }
+    }
+  };
+
+
+
+  // Extract array from common API shapes (axios/fetch/backends with {data:{...}})
+  const extractItems = (res: any): any[] => {
+    const payload = res?.data ?? res;
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.data)) return payload.data;
+    if (Array.isArray(payload?.items)) return payload.items;
+    if (Array.isArray(payload?.results)) return payload.results;
+    if (Array.isArray(payload?.data?.data)) return payload.data.data;
+    if (Array.isArray(payload?.data?.items)) return payload.data.items;
+    return [];
+  };
+
+  // Map server fields -> table fields
+  const normalize = (r: any): Payment => ({
+    id: r.id ?? r._id ?? r.uuid ?? r.key,
+    amount: r.amount ?? 0,
+    status: r.status ?? 'PENDING',
+    paymentMethod: r.paymentMethod ?? r.payment_method ?? 'CREDIT',
+    transactionId: r.transactionId ?? r.transaction_id ?? r.transactionId,
+    notes: r.notes ?? r.note ?? '',
+    created: r.createdAt
+      ? new Date(r.createdAt).toISOString().slice(0, 10)
+      : (r.created ? new Date(r.created).toISOString().slice(0, 10) : ''),
+    user: r.user?.name ?? r.user?.username ?? r.user ?? 'N/A',
+    userId: r.userId ?? r.user_id ?? r.user?.id ?? 'N/A',
+  });
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+
+    getPayments()
+      .then((res: any) => {
+        const items = extractItems(res);
+        if (items.length) {
+          const mapped = items.map(normalize);
+          if (mounted) setRows(mapped);
         } else {
-            setPayments([...payments, { ...form, id: Date.now() }]);
+          if (mounted) setRows(initialPayments);
         }
-        setDialogVisible(false);
-    };
+      })
+      .catch((err: any) => {
+        console.error('Error fetching payments:', err);
+        if (mounted) setRows(initialPayments);
+      })
+      .finally(() => mounted && setLoading(false));
 
-    const deletePayment = (payment: Payment) => {
-        setPayments(payments.filter(p => p.id !== payment.id));
-    };
+    return () => { mounted = false; };
+  }, []);
 
-    const actionBodyTemplate = (rowData: Payment) => (
-        <div className="flex gap-2">
-            <Button
-                icon="pi pi-pencil"
-                className="p-button-rounded p-button-info p-button-sm edit-btn "
-                onClick={() => openEdit(rowData)}
-            />
-            <Button
-                icon="pi pi-trash"
-                className="p-button-rounded p-button-danger p-button-sm"
-                onClick={() => deletePayment(rowData)}
-            />
-        </div>
-    );
 
-    return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Payments</h2>
-                <Button label="Add Payment" icon="pi pi-plus" onClick={openNew} />
-            </div>
-            <DataTable
-                value={payments}
-                selectionMode="single"
-                selection={selectedPayment}
-               // onSelectionChange={e => setSelectedPayment(e.value)}
-                className="shadow rounded"
-                paginator
-                rows={5}
-                responsiveLayout="scroll"
-            >
-                <Column field="payer" header="Payer" sortable />
-                <Column field="amount" header="Amount" sortable />
-                <Column field="date" header="Date" sortable />
-                <Column body={actionBodyTemplate} header="Actions" />
-            </DataTable>
 
-            <Dialog
-                header={isEdit ? "Edit Payment" : "New Payment"}
-                visible={dialogVisible}
-                style={{ width: "400px" }}
-                modal
-                onHide={hideDialog}
-                footer={
-                    <div>
-                        <Button label="Cancel" icon="pi pi-times" onClick={hideDialog} className="p-button-text" />
-                        <Button label="Save" icon="pi pi-check" onClick={savePayment} autoFocus />
-                    </div>
-                }
-            >
-                <div className="flex flex-col gap-4">
-                    <span className="p-float-label">
-                        <InputText
-                            id="payer"
-                            value={form.payer}
-                            onChange={e => setForm({ ...form, payer: e.target.value })}
-                            className="w-full"
-                        />
-                        <label htmlFor="payer">Payer</label>
-                    </span>
-                    <span className="p-float-label">
-                        <InputText
-                            id="amount"
-                            type="number"
-                          //  value={form.amount}
-                            onChange={e => setForm({ ...form, amount: Number(e.target.value) })}
-                            className="w-full"
-                        />
-                        <label htmlFor="amount">Amount</label>
-                    </span>
-                    <span className="p-float-label">
-                        <InputText
-                            id="date"
-                            type="date"
-                            value={form.date}
-                            onChange={e => setForm({ ...form, date: e.target.value })}
-                            className="w-full"
-                        />
-                        <label htmlFor="date">Date</label>
-                    </span>
-                </div>
-            </Dialog>
-        </div>
-    );
-}
+  return (
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <h2 className="text-2xl font-bold mb-4">Payments List</h2>
+
+        <DataTable
+          value={rows}
+          dataKey="id"
+          loading={loading}
+          rowHover
+          stripedRows
+          responsiveLayout="scroll"
+          paginator
+          rows={10}
+          emptyMessage={loading ? 'Loading…' : 'No payments found'}
+          className="p-datatable-hoverable"
+        >
+          <Column field="id" header="ID" sortable />
+          <Column field="amount" header="Amount" body={amountBodyTemplate} sortable />
+          <Column field="status" header="Status" body={statusBodyTemplate} sortable />
+          <Column field="paymentMethod" header="Payment Method" sortable />
+          <Column field="transactionId" header="Transaction ID" sortable />
+          <Column field="created" header="Created" sortable filter filterPlaceholder="Search by date" />
+          <Column field="userId" header="User ID" sortable />
+          <Column field="user" header="User" sortable filter filterPlaceholder="Search by user" />
+          <Column header="Actions" body={actionBodyTemplate} />
+        </DataTable>
+      </div>
+
+ 
+    </div>
+  );
+};
+
+export default Payments;

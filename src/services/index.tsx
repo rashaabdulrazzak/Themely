@@ -262,5 +262,30 @@ export const getCategories = async () => {
     throw error;
   }
 };
+// payment 
+export const getPayments = async () => {
+  try {
+    console.log("Fetching payments...");
+    const response = await api.get('/payments');
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+
+export const deletePayment = async (id:string) => {
+  try {
+    console.log("delete payments...",id);
+    const response = await api.delete(`/payments/${id}`);
+    console.log("payments ...",response);
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
 export default api;
 
