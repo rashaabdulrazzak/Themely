@@ -176,7 +176,18 @@ export const getDownloads = async () => {
   }
 };
 
+export const deleteDownload = async (id:string) => {
+  try {
+    console.log("delete download...",id);
+    const response = await api.delete(`/download/${id}`);
+    console.log("download ...",response);
 
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
 // canvases
 export const getCanvases = () => api.get('/canvases');
 export const deleteCanvas = async (id:string) => {

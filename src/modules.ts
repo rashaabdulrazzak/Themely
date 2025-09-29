@@ -53,3 +53,10 @@ export interface IPagination {
     user: string;
     lastModified: string;
 };
+export type Download = {
+  id: string | number;
+  fileName: string;
+  created: string;   // derived from createdAt (yyyy-mm-dd)
+  userId?: string | number;
+  user?: string;
+};
