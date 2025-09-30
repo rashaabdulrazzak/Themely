@@ -60,3 +60,31 @@ export type Download = {
   userId?: string | number;
   user?: string;
 };
+export interface Payment {
+  id: string | number;
+  amount: number;
+  status: string;
+  paymentMethod: string;
+  transactionId?: string;
+  notes?: string;
+  created: string;   // derived from createdAt (yyyy-mm-dd)
+  userId?: string | number;
+  user?: string;
+}
+
+export interface Review  {
+  id: string | number;
+  comment: string;
+  rate: number; // Using 'rate' to match your Prisma schema
+  created: string;   // derived from createdAt (yyyy-mm-dd)
+  userId?: string | number;
+  user?: string;
+};
+export interface User  {
+    id: string | number;
+    username: string;
+    email: string;
+    role: string;
+    status: string;
+    created: string;   // derived from createdAt (yyyy-mm-dd)
+};

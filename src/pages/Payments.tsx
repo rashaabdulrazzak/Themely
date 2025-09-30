@@ -7,18 +7,9 @@ import { getPayments, deletePayment } from "../services";
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
+import type { Payment } from "../modules";
 
-interface Payment {
-  id: string | number;
-  amount: number;
-  status: string;
-  paymentMethod: string;
-  transactionId?: string;
-  notes?: string;
-  created: string;   // derived from createdAt (yyyy-mm-dd)
-  userId?: string | number;
-  user?: string;
-}
+
 
 const initialPayments: Payment[] = [
   { id: 1, amount: 120.50, status: "COMPLETED", paymentMethod: "CREDIT", created: "2024-06-01", user: "John Doe", userId: 1 },
@@ -28,15 +19,7 @@ const initialPayments: Payment[] = [
 const Payments: React.FC = () => {
   const [rows, setRows] = useState<Payment[]>(initialPayments);
   const [loading, setLoading] = useState(true);
-  const [editDialog, setEditDialog] = useState(false);
-  const [selected, setSelected] = useState<Payment | null>(null);
 
-  // Status options for dropdown (if needed for editing)
-  const statusOptions = [
-    { label: "Pending", value: "PENDING" },
-    { label: "Completed", value: "COMPLETED" },
-    { label: "Failed", value: "FAILED" }
-  ];
 
   // ---- helpers
   const getSeverity = (status: string) => {
@@ -86,6 +69,7 @@ const Payments: React.FC = () => {
 
 
   // Extract array from common API shapes (axios/fetch/backends with {data:{...}})
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const extractItems = (res: any): any[] => {
     const payload = res?.data ?? res;
     if (Array.isArray(payload)) return payload;

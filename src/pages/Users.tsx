@@ -5,161 +5,284 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
-import { getUsers } from '../services';
+import { Tag } from 'primereact/tag';
+import { getUsers, deleteUser, updateUser } from '../services'; // Import API functions
 
-type User = {
-    id: number;
-    username: string;
-    email: string;
-    role: string;
-};
+
 
 const roleOptions = [
-    { label: 'Admin', value: 'Admin' },
-    { label: 'User', value: 'User' },
-    { label: 'Editor', value: 'Editor' },
+    { label: 'Admin', value: 'ADMIN' },
+    { label: 'User', value: 'USER' },
+    { label: 'Template Creator', value: 'TemplateCreator' }, // Updated from Editor
+];
+
+const statusOptions = [
+    { label: 'Active', value: 'ACTIVE' },
+    { label: 'Inactive', value: 'INACTIVE' },
 ];
 
 const defaultUsers: User[] = [
-    { id: 1, username: 'Alice Smith', email: 'alice@example.com', role: 'Admin' },
-    { id: 2, username: 'Bob Johnson', email: 'bob@example.com', role: 'User' },
-    { id: 3, username: 'Charlie Brown', email: 'charlie@example.com', role: 'Editor' },
+    { id: 1, username: 'Alice Smith', email: 'alice@example.com', role: 'ADMIN', status: 'ACTIVE', created: '2024-01-01' },
+    { id: 2, username: 'Bob Johnson', email: 'bob@example.com', role: 'USER', status: 'ACTIVE', created: '2024-01-02' },
+    { id: 3, username: 'Charlie Brown', email: 'charlie@example.com', role: 'TemplateCreator', status: 'INACTIVE', created: '2024-01-03' },
 ];
 
 const Users: React.FC = () => {
-    const [users, setUsers] = useState<User[]>(defaultUsers);
-    const [dialogVisible, setDialogVisible] = useState(false);
-    const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [isEdit, setIsEdit] = useState(false);
-      const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(1);        // current page
-    const [limit, setLimit] = useState(10);     // items per page
-    const [totalRecords, setTotalRecords] = useState(0);
+    const [rows, setRows] = useState<User[]>(defaultUsers);
+    const [loading, setLoading] = useState(true);
+    const [editDialog, setEditDialog] = useState(false);
+    const [selected, setSelected] = useState<User | null>(null);
 
-      useEffect(() => {
-        // Fetch templates from API (expects an array of Template)
-        getUsers()
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .then((res: any) => {
-            // Accept either res.data or res
-            console.log('Fetched .....:', res.pagination.totalUsers );
-            const data = Array.isArray(res) ? res : res?.data;
-            if (Array.isArray(data) && data.length) {
-                console.log('Fetched templates:', res.data || res);
-              setUsers(data);
-              setTotalRecords(res.pagination.totalUsers || data.length); 
-                setPage(res.pagination.page || 1);
-                setLimit(res.pagination.limit || 10);
-    
-            } else {
-              // Use sample data if API returns empty or invalid data
-              setUsers(defaultUsers);
+    // ---- helpers
+    const getStatusSeverity = (status: string) => {
+        switch (status) {
+            case 'ACTIVE': return 'success';
+            case 'INACTIVE': return 'danger';
+            default: return undefined;
+        }
+    };
+
+    const getRoleSeverity = (role: string) => {
+        switch (role) {
+            case 'ADMIN': return 'danger';
+            case 'TemplateCreator': return 'warning';
+            case 'USER': return 'info';
+            default: return undefined;
+        }
+    };
+
+    const statusBodyTemplate = (rowData: User) => (
+        <Tag value={rowData.status} severity={getStatusSeverity(rowData.status)} />
+    );
+
+    const roleBodyTemplate = (rowData: User) => (
+        <Tag value={rowData.role} severity={getRoleSeverity(rowData.role)} />
+    );
+
+    const actionBodyTemplate = (rowData: User) => (
+        <div className="flex gap-2">
+            <Button
+                icon="pi pi-pencil"
+                className="p-button-text p-button-sm edit-btn mr-2"
+                onClick={() => openEditDialog(rowData)}
+                aria-label={`Edit user ${rowData.username}`}
+            />
+            <Button
+                icon="pi pi-trash"
+                className="p-button-text p-button-sm p-button-danger"
+                onClick={() => handleDelete(rowData)}
+                aria-label={`Delete user ${rowData.username}`}
+            />
+        </div>
+    );
+
+    const openEditDialog = (u: User) => {
+        setSelected({ ...u });
+        setEditDialog(true);
+    };
+
+    const handleDelete = async (u: User) => {
+        if (window.confirm(`Are you sure you want to delete user "${u.username}"?`)) {
+            try {
+                const deletedUser = await deleteUser(u.id.toString());
+                console.log("Deleted user...", deletedUser);
+                setRows(prev => prev.filter(x => x.id !== u.id));
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                // Handle error - show toast or error message
             }
-            setLoading(false);
-          })
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .catch((err: any) => {
-            console.error('Error fetching users:', err);
-           
-            setUsers(defaultUsers);
-            setLoading(false);
-          });
-      }, []); // Empty dependency array to run only once
-    const openNew = () => {
-        setEditingUser({ id: users.length + 1, username: '', email: '', role: 'User' });
-        setIsEdit(false);
-        setDialogVisible(true);
+        }
     };
 
-    const openEdit = (user: User) => {
-        setEditingUser({ ...user });
-        setIsEdit(true);
-        setDialogVisible(true);
-    };
+    const handleSave = async () => {
+        if (selected) {
+            try {
+                // Call the real API to update the user
+                const response = await updateUser(selected);
+                
+               const normalizedUser = normalize(response); // Apply normalize here!
+            
+            // Update the local 'rows' state with the normalized server data
+            setRows(rows.map(u => 
+                u.id === normalizedUser.id ? normalizedUser : u
+            ));
 
-    const hideDialog = () => {
-        setDialogVisible(false);
-        setEditingUser(null);
-    };
-
-    const saveUser = () => {
-        if (!editingUser) return;
-        if (isEdit) {
-            setUsers(users.map(u => (u.id === editingUser.id ? editingUser : u)));
-        } else {
-            setUsers([...users, editingUser]);
+                console.log("User updated successfully:", response);
+            } catch (error) {
+                console.error("Failed to save user:", error);
+                // Optionally, show an error message to the user here
+            }
         }
         hideDialog();
     };
 
-    const deleteUser = (user: User) => {
-        setUsers(users.filter(u => u.id !== user.id));
+    // Extract array from common API shapes (axios/fetch/backends with {data:{...}})
+    const extractItems = (res: any): any[] => {
+        const payload = res?.data ?? res;
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload?.data)) return payload.data;
+        if (Array.isArray(payload?.items)) return payload.items;
+        if (Array.isArray(payload?.results)) return payload.results;
+        if (Array.isArray(payload?.data?.data)) return payload.data.data;
+        if (Array.isArray(payload?.data?.items)) return payload.data.items;
+        return [];
     };
 
-    const actionBodyTemplate = (rowData: User) => (
-        <div>
-            <Button icon="pi pi-pencil" className="p-button-text p-button-sm edit-btn mr-2" onClick={() => openEdit(rowData)} />
-            <Button icon="pi pi-trash" className="p-button-text p-button-sm p-button-danger" onClick={() => deleteUser(rowData)} />
-        </div>
-    );
+    // Map server fields -> table fields
+    const normalize = (r: any): User => ({
+        id: r.id ?? r._id ?? r.uuid ?? r.key,
+        username: r.username ?? r.name ?? r.userName ?? '',
+        email: r.email ?? '',
+        role: r.role ?? 'USER',
+        status: r.status ?? 'ACTIVE',
+        created: r.createdAt
+            ? new Date(r.createdAt).toISOString().slice(0, 10)
+            : (r.created ? new Date(r.created).toISOString().slice(0, 10) : ''),
+    });
+
+    useEffect(() => {
+        let mounted = true;
+        setLoading(true);
+
+        getUsers()
+            .then((res: any) => {
+                const items = extractItems(res);
+                if (items.length) {
+                    const mapped = items.map(normalize);
+                    if (mounted) setRows(mapped);
+                } else {
+                    if (mounted) setRows(defaultUsers);
+                }
+            })
+            .catch((err: any) => {
+                console.error('Error fetching users:', err);
+                if (mounted) setRows(defaultUsers);
+            })
+            .finally(() => mounted && setLoading(false));
+
+        return () => { mounted = false; };
+    }, []);
+
+    function hideDialog(): void {
+        setEditDialog(false);
+        setSelected(null);
+    }
 
     return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Users</h2>
-                <Button label="Add User" className='add-btn' icon="pi pi-plus" onClick={openNew} />
-            </div>
-            <DataTable value={users} loading={loading} 
-          totalRecords={totalRecords}
-   rows={10}
-            first={(page - 1) * limit}
-          onPage={(e) => {
-    const newPage = Math.floor(e.first / e.rows) + 1;
-    setPage(newPage);
-    setLimit(e.rows); // in case user changed rows per page
-  }}
-            className="shadow rounded-lg">
-                <Column field="id" header="ID" />
-                <Column field="username" header="Name" />
-                <Column field="email" header="Email" />
-                <Column field="role" header="Role" />
-                <Column body={actionBodyTemplate} header="Actions" style={{ width: '150px' }} />
-            </DataTable>
+        <div className="p-6 bg-gray-100 min-h-screen">
+            <div className="bg-white rounded-xl shadow-md p-6">
+                <h2 className="text-2xl font-bold mb-4">Users List</h2>
 
-            <Dialog header={isEdit ? 'Edit User' : 'Add User'} visible={dialogVisible} style={{ width: '400px' }} modal onHide={hideDialog}>
-                <div className="p-fluid">
-                    <div className="field mb-3">
-                        <label htmlFor="name">Name</label>
-                        <InputText
-                            id="name"
-                            value={editingUser?.username || ''}
-                            onChange={e => setEditingUser(editingUser ? { ...editingUser, username: e.target.value } : null)}
-                        />
+                <DataTable
+                    value={rows}
+                    dataKey="id"
+                    loading={loading}
+                    rowHover
+                    stripedRows
+                    responsiveLayout="scroll"
+                    paginator
+                    rows={10}
+                    emptyMessage={loading ? 'Loading…' : 'No users found'}
+                    className="p-datatable-hoverable"
+                >
+                    <Column field="id" header="ID" sortable />
+                    <Column field="username" header="Username" sortable filter filterPlaceholder="Search by username" />
+                    <Column field="email" header="Email" sortable filter filterPlaceholder="Search by email" />
+                    <Column field="role" header="Role" body={roleBodyTemplate} sortable />
+                    <Column field="status" header="Status" body={statusBodyTemplate} sortable />
+                    <Column field="created" header="Created" sortable filter filterPlaceholder="Search by date" />
+                    <Column header="Actions" body={actionBodyTemplate} />
+                </DataTable>
+            </div>
+
+            <Dialog
+                header={selected && selected.id ? "Edit User" : "Add User"}
+                visible={editDialog}
+                style={{ width: '600px' }}
+                modal
+                onHide={() => setEditDialog(false)}
+                className="rounded-xl"
+            >
+                {selected && (
+                    <div className="flex flex-col gap-4">
+                        
+                        {/* ID (Read-only, only visible when editing) */}
+                        {selected.id && (
+                            <div className="flex flex-col gap-1">
+                                <label>ID</label>
+                                <InputText
+                                    value={String(selected.id)}
+                                    readOnly
+                                    disabled
+                                    className="p-disabled"
+                                />
+                            </div>
+                        )}
+
+                        {/* Username (Editable) */}
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="username">Username</label>
+                            <InputText
+                                id="username"
+                                value={selected.username}
+                                onChange={(e) => setSelected({ ...selected, username: e.target.value })}
+                            />
+                        </div>
+
+                        {/* Email (Read-only) */}
+                        <div className="flex flex-col gap-1">
+                            <label>Email</label>
+                            <InputText
+                                value={selected.email}
+                                readOnly
+                                disabled
+                                className="p-disabled"
+                            />
+                        </div>
+
+                        {/* Role (Editable) */}
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="role">Role</label>
+                            <Dropdown
+                                id="role"
+                                value={selected.role}
+                                options={roleOptions}
+                                onChange={(e) => setSelected({ ...selected, role: e.value })}
+                                placeholder="Select a Role"
+                            />
+                        </div>
+
+                        {/* Status (Editable) */}
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="status">Status</label>
+                            <Dropdown
+                                id="status"
+                                value={selected.status}
+                                options={statusOptions}
+                                onChange={(e) => setSelected({ ...selected, status: e.value })}
+                                placeholder="Select a Status"
+                            />
+                        </div>
+
+                        {/* Created Date (Read-only, only visible when editing) */}
+                        {selected.created && (
+                            <div className="flex flex-col gap-1">
+                                <label>Created Date</label>
+                                <InputText
+                                    value={selected.created}
+                                    readOnly
+                                    disabled
+                                    className="p-disabled"
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex justify-end gap-2 mt-4">
+                            <Button label="Cancel" icon="pi pi-times" className="p-button-sm p-button-text" onClick={hideDialog} />
+                            <Button label="Save" icon="pi pi-check" className="p-button-sm p-button-success" onClick={handleSave} />
+                        </div>
                     </div>
-                    <div className="field mb-3">
-                        <label htmlFor="email">Email</label>
-                        <InputText
-                            id="email"
-                            value={editingUser?.email || ''}
-                            onChange={e => setEditingUser(editingUser ? { ...editingUser, email: e.target.value } : null)}
-                        />
-                    </div>
-                    <div className="field mb-3">
-                        <label htmlFor="role">Role</label>
-                        <Dropdown
-                            id="role"
-                            value={editingUser?.role || 'User'}
-                            options={roleOptions}
-                            onChange={e => setEditingUser(editingUser ? { ...editingUser, role: e.value } : null)}
-                            placeholder="Select a Role"
-                        />
-                    </div>
-                </div>
-                <div className="flex justify-content-end mt-4">
-                    <Button label="Save" icon="pi pi-check" className=" p-button-sm save-btn mr-2" onClick={saveUser} />
-                    <Button label="Cancel" icon="pi pi-times"className="p-button-sm cancel-btn"  onClick={hideDialog} />
-                    
-                </div>
+                )}
             </Dialog>
         </div>
     );

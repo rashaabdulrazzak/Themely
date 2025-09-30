@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { handleError, handleResponse } from './handleResponse';
-import type { Canvas, Template } from '../modules';
+import type { Canvas, Template, User } from '../modules';
 
 // Don't bake the token at creation time; it'll get stale.
 const api = axios.create({
@@ -71,18 +71,7 @@ export const authLogout = async () => {
 };
 
 // ---------- Data ----------
-export const getUsers = async () => {
-  try {
-    // If your backend uses /users (plural), change this accordingly.
-    console.log("Fetching users...");
-    const response = await api.get('/user');
 
-    return handleResponse(response);
-  } catch (error) {
-    handleError(error);
-    throw error;
-  }
-};
 export const getTemplatesbyId = async (id:string) => {
   try {
     console.log("Fetching users...");
@@ -287,5 +276,69 @@ export const deletePayment = async (id:string) => {
     throw error;
   }
 };
+
+// Review 
+export const getReviews = async () => {
+  try {
+    console.log("Fetching reviews...");
+    const response = await api.get('/reviews');
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+
+export const deleteReview = async (id:string) => {
+  try {
+    console.log("delete reviews...",id);
+    const response = await api.delete(`/reviews/${id}`);
+    console.log("reviews ...",response);
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+
+// user
+export const getUsers = async () => {
+  try {
+    // If your backend uses /users (plural), change this accordingly.
+    console.log("Fetching users...");
+    const response = await api.get('/user');
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+export const deleteUser = async (id:string) => {
+  try {
+    console.log("delete user...",id);
+    const response = await api.delete(`/user/${id}`);
+    console.log("user ...",response);
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
+ export const updateUser = async (data:User) => {
+  try {
+    console.log("post user...",data);
+    const response = await api.patch(`/user/${data.id}`,data);
+    console.log("post user...",response);
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+}; 
 export default api;
 

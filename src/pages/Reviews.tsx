@@ -1,122 +1,143 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
 import { Rating } from 'primereact/rating';
-import { InputText } from "primereact/inputtext";
+import { getReviews, deleteReview } from "../services"; // Import your API functions
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+import type { Review } from "../modules";
 
-type Review = {
-    id: number;
-    reviewer: string;
-    comment: string;
-    rating: number;
-};
+
 
 const initialReviews: Review[] = [
-    { id: 1, reviewer: "Alice", comment: "Great product!", rating: 5 },
-    { id: 2, reviewer: "Bob", comment: "Could be better.", rating: 3 },
-    { id: 3, reviewer: "Charlie", comment: "Excellent support.", rating: 4 },
+  { id: 1, comment: "Great product!", rate: 5, created: "2024-06-01", user: "Alice", userId: 1 },
+  { id: 2, comment: "Could be better.", rate: 3, created: "2024-06-02", user: "Bob", userId: 2 },
+  { id: 3, comment: "Excellent support.", rate: 4, created: "2024-06-03", user: "Charlie", userId: 3 },
 ];
 
-export default function Reviews() {
-    const [reviews, setReviews] = useState<Review[]>(initialReviews);
+const Reviews: React.FC = () => {
+  const [rows, setRows] = useState<Review[]>(initialReviews);
+  const [loading, setLoading] = useState(true);
+ 
+
+  // ---- helpers
+  const ratingBodyTemplate = (rowData: Review) => (
+    <Rating value={rowData.rate} readOnly cancel={false} />
+  );
+
+  const commentBodyTemplate = (rowData: Review) => (
+    <div className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap" title={rowData.comment}>
+      {rowData.comment}
+    </div>
+  );
+
+  const actionBodyTemplate = (rowData: Review) => (
+    <div className="flex gap-2">
     
-    const [selectedReview, setSelectedReview] = useState<Review | null>(null);
-    const [dialogVisible, setDialogVisible] = useState(false);
-    const [isEdit, setIsEdit] = useState(false);
+      <Button
+        icon="pi pi-trash"
+        className="p-button-text p-button-sm p-button-danger"
+        onClick={() => handleDelete(rowData)}
+        aria-label={`Delete review ${rowData.id}`}
+      />
+    </div>
+  );
 
-    const [form, setForm] = useState<Review>({
-        id: 0,
-        reviewer: "",
-        comment: "",
-        rating: 1,
-    });
 
-     const ratingBodyTemplate = (review: Review) => {
-        return <Rating value={review.rating} readOnly cancel={false} />;
-    };
-    const openNew = () => {
-        setForm({ id: Date.now(), reviewer: "", comment: "", rating: 1 });
-        setIsEdit(false);
-        setDialogVisible(true);
-    };
+  const handleDelete = async (r: Review) => {
+    if (window.confirm(`Are you sure you want to delete this review?`)) {
+      try {
+        const deletedReview = await deleteReview(r.id.toString());
+        console.log("Deleted review...", deletedReview);
+        setRows(prev => prev.filter(x => x.id !== r.id));
+      } catch (error) {
+        console.error("Error deleting review:", error);
+        // Handle error - show toast or error message
+      }
+    }
+  };
 
-    const openEdit = (review: Review) => {
-        setForm(review);
-        setIsEdit(true);
-        setDialogVisible(true);
-    };
 
-    const saveReview = () => {
-        if (isEdit) {
-            setReviews(reviews.map(r => (r.id === form.id ? form : r)));
+  // Extract array from common API shapes (axios/fetch/backends with {data:{...}})
+  const extractItems = (res: any): any[] => {
+    const payload = res?.data ?? res;
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.data)) return payload.data;
+    if (Array.isArray(payload?.items)) return payload.items;
+    if (Array.isArray(payload?.results)) return payload.results;
+    if (Array.isArray(payload?.data?.data)) return payload.data.data;
+    if (Array.isArray(payload?.data?.items)) return payload.data.items;
+    return [];
+  };
+
+  // Map server fields -> table fields
+  const normalize = (r: any): Review => ({
+    id: r.id ?? r._id ?? r.uuid ?? r.key,
+    comment: r.comment ?? r.review ?? r.text ?? '',
+    rate: r.rate ?? r.rating ?? r.stars ?? 1,
+    created: r.createdAt
+      ? new Date(r.createdAt).toISOString().slice(0, 10)
+      : (r.created ? new Date(r.created).toISOString().slice(0, 10) : ''),
+    user: r.user?.name ?? r.user?.username ?? r.user ?? 'N/A',
+    userId: r.userId ?? r.user_id ?? r.user?.id ?? 'N/A',
+  });
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+
+    getReviews()
+      .then((res: any) => {
+        const items = extractItems(res);
+        if (items.length) {
+          const mapped = items.map(normalize);
+          if (mounted) setRows(mapped);
         } else {
-            setReviews([...reviews, form]);
+          if (mounted) setRows(initialReviews);
         }
-        setDialogVisible(false);
-        setForm({ id: 0, reviewer: "", comment: "", rating: 1 });
-        console.log(selectedReview)
-    };
+      })
+      .catch((err: any) => {
+        console.error('Error fetching reviews:', err);
+        if (mounted) setRows(initialReviews);
+      })
+      .finally(() => mounted && setLoading(false));
 
-    const deleteReview = (review: Review) => {
-        setReviews(reviews.filter(r => r.id !== review.id));
-    };
+    return () => { mounted = false; };
+  }, []);
 
-    const reviewDialogFooter = (
-        <div>
-            <Button label="Save" icon="pi pi-check" onClick={saveReview} className="p-button-sm save-btn mr-2" />
-            <Button label="Cancel" icon="pi pi-times" onClick={() => setDialogVisible(false)} className="p-button-sm cancel-btn" />
-        </div>
-    );
 
-    return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Reviews</h2>
-                <Button label="Add Review" icon="pi pi-plus" onClick={openNew} className="p-button-sm p-button-primary add-btn" />
-            </div>
-            <DataTable value={reviews} selectionMode="single" onSelectionChange={e => setSelectedReview(e.value)} className="shadow rounded">
-                <Column field="reviewer" header="Reviewer" />
-                <Column field="comment" header="Comment" />
-                <Column field="rating" header="Rating" body={ratingBodyTemplate} />
-                <Column
-                    header="Actions"
-                    body={rowData => (
-                        <div className="flex gap-2">
-                            <Button icon="pi pi-pencil" className="p-button-sm  edit-btn" onClick={() => openEdit(rowData)} />
-                            <Button icon="pi pi-trash" className="p-button-text p-button-sm p-button-danger" onClick={() => deleteReview(rowData)} />
-                        </div>
-                    )}
-                />
-            </DataTable>
+  return (
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <h2 className="text-2xl font-bold mb-4">Reviews List</h2>
 
-            <Dialog header={isEdit ? "Edit Review" : "Add Review"} visible={dialogVisible} style={{ width: "30vw" }} footer={reviewDialogFooter} onHide={() => setDialogVisible(false)}>
-                <div className="flex flex-col gap-4">
-                    <span className="p-float-label">
-                        <InputText id="reviewer" value={form.reviewer} onChange={e => setForm({ ...form, reviewer: e.target.value })} className="w-full" />
-                        <label htmlFor="reviewer">Reviewer</label>
-                    </span>
-                    <span className="p-float-label">
-                        <InputText id="comment" value={form.comment} onChange={e => setForm({ ...form, comment: e.target.value })} className="w-full" />
-                        <label htmlFor="comment">Comment</label>
-                    </span>
-                    <span className="p-float-label">
-                        <InputText
-                            id="rating"
-                            type="number"
-                            min={1}
-                            max={5}
-                         //   value={form.rating}
-                            onChange={e => setForm({ ...form, rating: Number(e.target.value) })}
-                            className="w-full"
-                        />
-                        <label htmlFor="rating">Rating (1-5)</label>
-                    </span>
-                </div>
-            </Dialog>
-        </div>
-    );
-}
+        <DataTable
+          value={rows}
+          dataKey="id"
+          loading={loading}
+          rowHover
+          stripedRows
+          responsiveLayout="scroll"
+          paginator
+          rows={10}
+          emptyMessage={loading ? 'Loading…' : 'No reviews found'}
+          className="p-datatable-hoverable"
+        >
+          <Column field="id" header="ID" sortable />
+          <Column field="comment" header="Comment" body={commentBodyTemplate} sortable filter filterPlaceholder="Search by comment" />
+          <Column field="rate" header="Rating" body={ratingBodyTemplate} sortable />
+          <Column field="created" header="Created" sortable filter filterPlaceholder="Search by date" />
+          <Column field="userId" header="User ID" sortable />
+          <Column field="user" header="User" sortable filter filterPlaceholder="Search by user" />
+          <Column header="Actions" body={actionBodyTemplate} />
+        </DataTable>
+      </div>
+
+
+    </div>
+  );
+};
+
+export default Reviews;
