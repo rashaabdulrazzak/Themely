@@ -3,7 +3,7 @@ import './styles/App.scss'
 import { PrimeReactProvider } from 'primereact/api';
 import { BrowserRouter } from 'react-router-dom';
 import './styles/App.scss'
-import { AuthProvider } from './AuthContext';
+import { AuthProvider } from '../src/contexts/AuthContext';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

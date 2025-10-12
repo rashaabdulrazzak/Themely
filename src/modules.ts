@@ -51,7 +51,7 @@ export interface IPagination {
     id: number;
     name: string;
     user: string;
-    lastModified: string;
+    createdAt: string;
 };
 export type Download = {
   id: string | number;
@@ -87,4 +87,7 @@ export interface User  {
     role: string;
     status: string;
     created: string;   // derived from createdAt (yyyy-mm-dd)
+     createdAt?: string;
 };
+export type Role = 'ADMIN' | 'TemplateCreator' | 'USER';
+export type Status = 'ACTIVE' | 'INACTIVE' | 'BANNED';

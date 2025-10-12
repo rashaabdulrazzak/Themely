@@ -4,7 +4,7 @@ import { Avatar } from "primereact/avatar";
 import { useRef,  } from "react";
 import { Menu } from "primereact/menu";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 
 const NavBar = () =>{

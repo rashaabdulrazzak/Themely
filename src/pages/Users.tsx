@@ -7,6 +7,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Tag } from 'primereact/tag';
 import { getUsers, deleteUser, updateUser } from '../services'; // Import API functions
+import type { User } from '../modules';
 
 
 

@@ -63,8 +63,13 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'im
  const [categories, setCategories] = useState<string[]>([]);
 const [categoriesLoading, setCategoriesLoading] = useState(false); 
   const openEditDialog = (tpl: Template) => {
+     console.log('🔍 Opening edit dialog for:', tpl);
+  console.log('Category type:', typeof tpl.category);
+  console.log('Category value:', tpl.category);
+  
     setSelectedTemplate({ ...tpl });
     setEditDialog(true);
+      setTimeout(() => setEditDialog(true), 0);
   };
 
   const handleDelete = (tpl: Template) => {
@@ -218,8 +223,10 @@ useEffect(() => {
   const fetchCategories = async () => {
     setCategoriesLoading(true);
     try {
+      console.log('Fetching categories from API...');
       const response = await getCategories();
-      setCategories(response.data);
+      setCategories(response);
+      console.log('Fetched categories:', response);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
       // Fallback to hardcoded categories
@@ -233,9 +240,7 @@ useEffect(() => {
 }, []);
   useEffect(() => {
     // Fetch templates from API (expects an array of Template)
-    getTemplatesbyId("50e689e7-a19e-4ff9-a2ac-354856d9f213").then((res:any)=>{
-      console.log('res',res)
-    })
+
     getTemplates()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((res: any) => {
@@ -252,6 +257,7 @@ useEffect(() => {
           setTemplates(sampleTemplates);
         }
         setLoading(false);
+        
       })
       .catch((err: unknown) => {
         console.error('Error fetching templates:', err);
@@ -422,15 +428,23 @@ useEffect(() => {
   style={{ width: '550px' }}
   modal
   onHide={() => {
-    setEditDialog(false);
+   setEditDialog(false);
     setImageFile(null);
     setImagePreview(null);
     setImageError(null);
+    setSelectedTemplate(null);
   }}
   className="rounded-xl"
 >
-  {selectedTemplate && (
+  {!selectedTemplate ? (
+    <div className="flex items-center justify-center p-4">
+      <i className="pi pi-spin pi-spinner text-blue-500 mr-2"></i>
+      <span>Loading...</span>
+    </div>
+  ): (
+    
     <div className="flex flex-col gap-4">
+      
       {/* Loading overlay */}
       {uploadLoading && (
         <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50 rounded-xl">
@@ -450,7 +464,49 @@ useEffect(() => {
         />
       </div>
 
-      {/* Image upload section - your existing code here */}
+   <div className="flex flex-col gap-2">
+  <label className="font-medium">Template Image</label>
+  
+  {/* Current image preview */}
+  {!imagePreview && selectedTemplate.image && (
+    <div className="mb-2">
+      <img 
+        src={getImageUrl(selectedTemplate.image)} 
+        alt="Current" 
+        className="w-32 h-20 object-cover border rounded"
+      />
+      <p className="text-sm text-gray-500 mt-1">Current image</p>
+    </div>
+  )}
+  
+  {/* New image preview */}
+  {imagePreview && (
+    <div className="mb-2">
+      <img 
+        src={imagePreview} 
+        alt="Preview" 
+        className="w-32 h-20 object-cover border rounded"
+      />
+      <p className="text-sm text-green-600 mt-1">New image (not saved yet)</p>
+    </div>
+  )}
+  
+  {/* File input */}
+  <input
+    type="file"
+    accept="image/*"
+    onChange={handleImageChange}
+    disabled={uploadLoading}
+    className="text-sm"
+  />
+  
+  {imageError && (
+    <small className="text-red-500">{imageError}</small>
+  )}
+  <small className="text-gray-500">
+    Max size: 5MB. Formats: JPEG, PNG, WebP, GIF
+  </small>
+</div>
       
       <div className="flex flex-col gap-1">
         <label className="font-medium">Price (USD)</label>
@@ -520,6 +576,7 @@ useEffect(() => {
     </div>
   )}
 </Dialog>
+
 
     </div>
   );

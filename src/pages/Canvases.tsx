@@ -15,21 +15,21 @@ type Canvas = {
     id: number;
     name: string;
     user: string;
-    lastModified: string;
+    createdAt: string;
 };
 
 const users = ['John Doe', 'Jane Smith', 'Alice Johnson'];
 
 const initialCanvases: Canvas[] = [
-    { id: 1, name: 'Canvas One', user: 'John Doe', lastModified: '2024-06-01' },
-    { id: 2, name: 'Canvas Two', user: 'Jane Smith', lastModified: '2024-06-02' },
-    { id: 3, name: 'Canvas Three', user: 'Alice Johnson', lastModified: '2024-06-03' },
+    { id: 1, name: 'Canvas One', user: 'John Doe', createdAt: '2024-06-01' },
+    { id: 2, name: 'Canvas Two', user: 'Jane Smith', createdAt: '2024-06-02' },
+    { id: 3, name: 'Canvas Three', user: 'Alice Johnson', createdAt: '2024-06-03' },
 ];
 
 const sampleCanvases: Canvas[] = [
-    { id: 1, name: 'Canvas One', user: 'John Doe', lastModified: '2024-06-01' },
-    { id: 2, name: 'Canvas Two', user: 'Jane Smith', lastModified: '2024-06-02' },
-    { id: 3, name: 'Canvas Three', user: 'Alice Johnson', lastModified: '2024-06-03' },
+    { id: 1, name: 'Canvas One', user: 'John Doe', createdAt: '2024-06-01' },
+    { id: 2, name: 'Canvas Two', user: 'Jane Smith', createdAt: '2024-06-02' },
+    { id: 3, name: 'Canvas Three', user: 'Alice Johnson', createdAt: '2024-06-03' },
 ];
 
 const Canvases: React.FC = () => {
@@ -121,10 +121,17 @@ const Canvases: React.FC = () => {
       .then((res: any) => {
         // Accept either res.data or res
         console.log('Fetched templates:', res);
-        const data = Array.isArray(res) ? res : res?.data?.data;
+        const data = Array.isArray(res) ? res : res?.data;
         if (Array.isArray(data) && data.length) {
-            console.log('Fetched templates:', res.data.data || res);
-          setCanvases(data);
+            console.log('Fetched templates:', res.data || res);
+            const results = data.map((item: any) => ({
+              id: item.id,
+              name: item.name,
+              user: item.user.username,
+              createdAt: item.createdAt ? item.createdAt.slice(0, 10) : '' // Format date as yyyy-mm-dd
+            }));
+            console.log('Processed canvases:', results);
+          setCanvases(results);
          //  setTotalRecords(res.data.pagination.totalItems || data.length); 
 
         } else {
@@ -150,7 +157,7 @@ const Canvases: React.FC = () => {
                     icon="pi pi-plus" 
                     className="p-button-sm p-button-primary add-btn"
                     onClick={() => {
-                        setSelectedCanvas({ id: 0, name: '', user: '', lastModified: new Date().toISOString().slice(0,10) });
+                        setSelectedCanvas({ id: 0, name: '', user: '', createdAt: new Date().toISOString().slice(0,10) });
                         setAddDialog(true);
                     }}
                 />
@@ -194,7 +201,7 @@ const Canvases: React.FC = () => {
                     <Column field="id" header="ID" sortable />
                     <Column field="name" header="Name" sortable filter filterPlaceholder="Search by name" />
                     <Column field="user" header="User" sortable filter filterPlaceholder="Filter by user" />
-                    <Column field="lastModified" header="Last Modified" sortable filter filterPlaceholder="Filter by date" />
+                    <Column field="createdAt" header="Last Modified" sortable filter filterPlaceholder="Filter by date" />
                     <Column header="Actions" body={actionBodyTemplate} />
                 </DataTable>
             </div>
@@ -229,8 +236,8 @@ const Canvases: React.FC = () => {
                         <div className="flex flex-col gap-1">
                             <label>Last Modified</label>
                             <Calendar 
-                                value={new Date(selectedCanvas.lastModified)}
-                                onChange={(e) => setSelectedCanvas({ ...selectedCanvas, lastModified: (e.value as Date).toISOString().slice(0,10) })}
+                                value={new Date(selectedCanvas.createdAt)}
+                                onChange={(e) => setSelectedCanvas({ ...selectedCanvas, createdAt: (e.value as Date).toISOString().slice(0,10) })}
                                 dateFormat="yy-mm-dd"
                                 className="w-full"
                             />

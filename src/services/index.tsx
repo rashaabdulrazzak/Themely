@@ -36,26 +36,45 @@ api.interceptors.response.use(
 export const authRegister = (registerData: any) =>
   api.post('/auth/register', registerData);
 
-export const authLogin = async (loginData: any) => {
-  try {
-    // 2) Fix the path: needs a leading slash
-    const response = await api.post('/auth/login', loginData);
+// services/authService.ts (Minimal version using your existing patterns)
 
-    // Your handleResponse persists token when present and returns a merged object
+export const authLogin = async (loginData: { email: string; password: string }) => {
+  try {
+    console.log('authLogin: Attempting login for:', loginData.email);
+    
+    const response = await api.post('/auth/login', loginData);
     const data = handleResponse(response, undefined, 'Post');
 
-    // 3) Immediately update axios default header (helps the very next call)
-    const token = data?.token ?? response?.data?.token ?? response?.data?.accessToken;
-    if (token) {
-      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+    // Extract token from different possible locations  
+    const token = data?.token ?? 
+                  data?.accessToken ?? 
+                  response?.data?.token ?? 
+                  response?.data?.accessToken;
+    
+    console.log('authLogin: Extracted token exists:', !!token);
+    console.log('authLogin: Token value (first 20 chars):', token ? token.substring(0, 20) + '...' : 'null');
+
+    if (!token) {
+      throw new Error('No authentication token received');
     }
 
+    // ✅ IMPORTANT: Set the authorization header correctly
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    
+    // Debug: Verify it was set
+    console.log('authLogin: Authorization header set to:', api.defaults.headers.common['Authorization']);
+    console.log('authLogin: All headers after setting:', api.defaults.headers.common);
+
     return data;
+
   } catch (error) {
+    console.error('authLogin: Error occurred:', error);
     handleError(error);
     throw error;
   }
 };
+
+
 
 export const authLogout = async () => {
   try {
@@ -85,15 +104,33 @@ export const getTemplatesbyId = async (id:string) => {
 };
 export const getTemplates = async () => {
   try {
-    console.log("Fetching users...");
-    const response = await api.get('/template/all');
-
+    console.log("Using manual authorization header...");
+    
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error("No token available");
+    }
+    
+    const response = await api.get('/template/all', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    console.log("✅ Manual header SUCCESS:", response.status);
     return handleResponse(response);
-  } catch (error) {
+    
+  } catch (error: any) {
+    console.log("❌ Manual header FAILED:", error.response?.status);
     handleError(error);
     throw error;
   }
 };
+
+
+
+
 export const deleteTemplate = async (id:string) => {
   try {
     console.log("post template...",id);
@@ -178,7 +215,43 @@ export const deleteDownload = async (id:string) => {
   }
 };
 // canvases
-export const getCanvases = () => api.get('/canvases');
+//export const getCanvases = () => api.get('/canvases');
+export const getCanvases = async () => {
+  try {
+    console.log("Using manual authorization header...");
+    
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error("No token available");
+    }
+    
+    const response = await api.get('/canvases', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    console.log("✅ Manual header SUCCESS:", response.status);
+    return handleResponse(response);
+    
+  } catch (error: any) {
+    console.log("❌ Manual header FAILED:", error.response?.status);
+    handleError(error);
+    throw error;
+  }
+};
+/* export const getCanvases = async () => {
+  try {
+    console.log("Fetching payments...");
+    const response = await api.get('/canvases');
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+}; */
 export const deleteCanvas = async (id:string) => {
   try {
     console.log("delete canvas...",id);
