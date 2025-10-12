@@ -1,3 +1,4 @@
+import { Avatar } from 'primereact/avatar';
 export class RegisterDTO
 {
     first_name: string = '';
@@ -80,7 +81,7 @@ export interface Review  {
   userId?: string | number;
   user?: string;
 };
-export interface User  {
+export type  User = {
     id: string | number;
     username: string;
     email: string;
@@ -88,6 +89,10 @@ export interface User  {
     status: string;
     created: string;   // derived from createdAt (yyyy-mm-dd)
      createdAt?: string;
+     Avatar?: string;
 };
+
+
+
 export type Role = 'ADMIN' | 'TemplateCreator' | 'USER';
 export type Status = 'ACTIVE' | 'INACTIVE' | 'BANNED';

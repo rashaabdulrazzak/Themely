@@ -1,18 +1,9 @@
 // src/auth/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { authLogin } from "../services";
+import type { User } from "../modules";
 
-export type Role = 'ADMIN' | 'TEMPLATECREATOR' | 'USER';
-export type Status = 'ACTIVE' | 'INACTIVE' | 'BANNED';
 
-type User = {
-  id: string;
-  email: string;
-  username: string;
-  role: Role;
-  status: Status;
-  name?: string;
-};
 
 export type AuthContextType = {
   user: User | null;
@@ -98,7 +89,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         username: userData.username || userData.name || email.split('@')[0],
         role: (userData.role || 'USER').toUpperCase() as Role,
         status: userData.status || 'ACTIVE',
-        name: userData.name || userData.username
+        name: userData.name || userData.username,
+        created: userData.createdAt ? new Date(userData.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        createdAt: userData.createdAt || new Date().toISOString(),
+        Avatar: userData.Avatar || ''
+
       };
       
       console.log('Normalized user object:', normalizedUser);
