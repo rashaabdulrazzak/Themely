@@ -10,14 +10,11 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import {
   deleteTemplate,
-  editTemplate,
   editTemplateWithFile,
   getCategories,
   getTemplates,
-  getTemplatesbyId,
 } from "../services";
 import type { Category } from "../modules";
-import { Bounce, toast } from "react-toastify";
 import { Toast } from "primereact/toast";
 
 type Template = {
@@ -88,6 +85,9 @@ const Templates: React.FC = () => {
   const [imageError, setImageError] = useState<string | null>(null);
   const [selectedTemplates, setSelectedTemplates] = useState<Template[]>([]);
 const [deleteProductsDialog, setDeleteProductsDialog] = useState<boolean>(false);
+const [deleteProductDialog, setDeleteProductDialog] = useState<boolean>(false);
+const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
+
 const toast = useRef<Toast>(null);
   // Derived filters (unique categories/userIds from current data)
   // const categories = Array.from(new Set(templates.map(t => t.category))).sort();
@@ -174,57 +174,69 @@ const toast = useRef<Toast>(null);
   };
 
   // 2. Debug your handleSave function
-  const handleSave = async () => {
-    console.log("🚀 handleSave called");
-    console.log("selectedTemplate:", selectedTemplate);
-    console.log("imageFile state:", imageFile);
-    console.log(
-      "imageFile details:",
-      imageFile
-        ? {
-            name: imageFile.name,
-            size: imageFile.size,
-            type: imageFile.type,
-            lastModified: imageFile.lastModified,
-          }
-        : "No file"
-    );
+const handleSave = async () => {
+  console.log("🚀 handleSave called");
+  console.log("selectedTemplate:", selectedTemplate);
+  console.log("imageFile state:", imageFile);
 
-    if (selectedTemplate) {
-      setUploadLoading(true);
-      try {
-        console.log("📤 Calling editTemplate with:", {
-          templateData: selectedTemplate,
-          imageFile: imageFile,
-        });
+  if (selectedTemplate) {
+    setUploadLoading(true);
+    try {
+      console.log("📤 Calling editTemplate with:", {
+        templateData: selectedTemplate,
+        imageFile: imageFile,
+      });
 
-        const updatedTemplate = await editTemplateWithFile(
-          selectedTemplate,
-          imageFile
-        );
-        console.log("✅ Template updated:", updatedTemplate);
+      const updatedTemplate = await editTemplateWithFile(
+        selectedTemplate,
+        imageFile
+      );
+      console.log("✅ Template updated:", updatedTemplate);
 
-        setTemplates((prev) =>
-          prev.map((t) =>
-            t.id === updatedTemplate.data.id ? updatedTemplate.data : t
-          )
-        );
+      setTemplates((prev) =>
+        prev.map((t) =>
+          t.id === updatedTemplate.data.id ? updatedTemplate.data : t
+        )
+      );
 
-        // Reset state
-        setEditDialog(false);
-        setSelectedTemplate(null);
-        setImageFile(null);
-        setImagePreview(null);
-        setImageError(null);
-      } catch (error) {
-        console.error("❌ Update failed:", error);
-      } finally {
-        setUploadLoading(false);
-      }
-    } else {
-      console.log("❌ No selectedTemplate");
+      // Reset state
+      setEditDialog(false);
+      setSelectedTemplate(null);
+      setImageFile(null);
+      setImagePreview(null);
+      setImageError(null);
+
+      // Show success toast
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Successful',
+        detail: `Template "${updatedTemplate.data.name}" updated successfully`,
+        life: 3000,
+      });
+    } catch (error) {
+      console.error("❌ Update failed:", error);
+      
+      // Show error toast
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to update template',
+        life: 3000,
+      });
+    } finally {
+      setUploadLoading(false);
     }
-  };
+  } else {
+    console.log("❌ No selectedTemplate");
+    toast.current?.show({
+      severity: 'warn',
+      summary: 'Warning',
+      detail: 'No template selected for editing',
+      life: 3000,
+    });
+  }
+};
+
   /*  const handleSave = async () => {
      
    
@@ -262,22 +274,27 @@ const toast = useRef<Toast>(null);
     <span className="font-medium">{formatCurrency(row.price)}</span>
   );
 
-  const actionsBody = (row: Template) => (
-    <div className="flex gap-2">
-      <Button
-        icon="pi pi-pencil"
-        className="p-button-text p-button-sm"
-        onClick={() => openEditDialog(row)}
-        aria-label="Edit"
-      />
-      <Button
-        icon="pi pi-trash"
-        className="p-button-text p-button-sm p-button-danger"
-        onClick={() => handleDelete(row)}
-        aria-label="Delete"
-      />
-    </div>
-  );
+const actionsBody = (row: Template) => (
+  <div className="flex gap-2">
+    <Button
+      icon="pi pi-pencil"
+      className="p-button-text p-button-sm"
+      onClick={() => openEditDialog(row)}
+      aria-label="Edit"
+      tooltip="Edit"
+      tooltipOptions={{ position: 'top' }}
+    />
+    <Button
+      icon="pi pi-trash"
+      className="p-button-text p-button-sm p-button-danger"
+      onClick={() => confirmDeleteTemplate(row)}
+      aria-label="Delete"
+      tooltip="Delete"
+      tooltipOptions={{ position: 'top' }}
+    />
+  </div>
+);
+
   useEffect(() => {
     const fetchCategories = async () => {
       setCategoriesLoading(true);
@@ -387,6 +404,52 @@ const deleteSelectedTemplates = async () => {
 
 const hideDeleteProductsDialog = () => {
   setDeleteProductsDialog(false);
+};
+// Function to open single delete confirmation dialog
+const confirmDeleteTemplate = (template: Template) => {
+  setTemplateToDelete(template);
+  setDeleteProductDialog(true);
+};
+
+// Function to execute single template deletion
+const deleteSingleTemplate = async () => {
+  if (!templateToDelete) return;
+
+  try {
+    await deleteTemplate(templateToDelete.id.toString());
+    
+    // Update the state
+    setTemplates((prev) => prev.filter((t) => t.id !== templateToDelete.id));
+    
+    setDeleteProductDialog(false);
+    setTemplateToDelete(null);
+    
+    // Show success toast
+    toast.current?.show({
+      severity: 'success',
+      summary: 'Successful',
+      detail: `Template "${templateToDelete.name}" deleted successfully`,
+      life: 3000,
+    });
+  } catch (error) {
+    console.error('Error deleting template:', error);
+    
+    // Show error toast
+    toast.current?.show({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to delete template',
+      life: 3000,
+    });
+    
+    setDeleteProductDialog(false);
+    setTemplateToDelete(null);
+  }
+};
+
+const hideDeleteProductDialog = () => {
+  setDeleteProductDialog(false);
+  setTemplateToDelete(null);
 };
 
 
@@ -749,6 +812,44 @@ const hideDeleteProductsDialog = () => {
     </span>
   </div>
 </Dialog>
+      {/* Single Delete Confirmation Dialog */}
+      <Dialog
+  visible={deleteProductDialog}
+  style={{ width: '32rem' }}
+  breakpoints={{ '960px': '75vw', '641px': '90vw' }}
+  header="Confirm Deletion"
+  modal
+  footer={
+    <div className="flex justify-end gap-2">
+      <Button
+        label="No"
+        icon="pi pi-times"
+        outlined
+        onClick={hideDeleteProductDialog}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        severity="danger"
+        onClick={deleteSingleTemplate}
+      />
+    </div>
+  }
+  onHide={hideDeleteProductDialog}
+>
+  <div className="confirmation-content flex align-items-center">
+    <i 
+      className="pi pi-exclamation-triangle mr-3" 
+      style={{ fontSize: '2rem', color: '#f59e0b' }} 
+    />
+    {templateToDelete && (
+      <span>
+        Are you sure you want to delete <b>"{templateToDelete.name}"</b>?
+      </span>
+    )}
+  </div>
+</Dialog>
+
 
     </div></>
   );
