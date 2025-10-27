@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -14,7 +14,7 @@ import {
   getCategories,
   getTemplates,
 } from "../services";
-import type { Category } from "../modules";
+import type { Category, DialogState } from "../modules";
 import { Toast } from "primereact/toast";
 
 type Template = {
@@ -87,6 +87,7 @@ const Templates: React.FC = () => {
 const [deleteProductsDialog, setDeleteProductsDialog] = useState<boolean>(false);
 const [deleteProductDialog, setDeleteProductDialog] = useState<boolean>(false);
 const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
+const [dialog, setDialog] = useState<DialogState>({ type: null });
 
 const toast = useRef<Toast>(null);
   // Derived filters (unique categories/userIds from current data)
@@ -102,7 +103,10 @@ const toast = useRef<Toast>(null);
   ];
   const [categories, setCategories] = useState<string[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const openEditDialog = (tpl: Template) => {
+/*   const openEditDialog = useCallback((tpl: Template) => {
+  setDialog({ type: 'edit', data: tpl });
+}, []); */
+   const openEditDialog = (tpl: Template) => {
     console.log("🔍 Opening edit dialog for:", tpl);
     console.log("Category type:", typeof tpl.category);
     console.log("Category value:", tpl.category);
@@ -110,21 +114,9 @@ const toast = useRef<Toast>(null);
     setSelectedTemplate({ ...tpl });
     setEditDialog(true);
     setTimeout(() => setEditDialog(true), 0);
-  };
+  }; 
 
-  const handleDelete = (tpl: Template) => {
-    if (window.confirm(`Delete template "${tpl.name}"?`)) {
-      const te = async () => {
-        try {
-          await deleteTemplate(tpl.id.toString());
-          setTemplates((prev) => prev.filter((t) => t.id !== tpl.id));
-        } catch (error) {
-          console.error("Error deleting template:", error);
-        }
-      };
-      te();
-    }
-  };
+ 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("🔍 handleImageChange called");
     const file = e.target.files?.[0];

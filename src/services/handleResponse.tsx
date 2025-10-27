@@ -2,7 +2,7 @@ import { Bounce, toast } from "react-toastify";
 import { authLogout } from ".";
 import { emptyData, mainRequestNeededEmptyData } from "./requestedData";
 
-export const handleResponse = (
+/* export const handleResponse = (
   response: any,
   page?: string,
   requestType?: string
@@ -32,6 +32,43 @@ export const handleResponse = (
           return { ...result, token  };
         }
         
+      return result;
+    } else {
+      if (page && mainRequestNeededEmptyData.includes(page)) {
+        return emptyData[page!.toLowerCase()];
+      } else if (typeof result === "string") {
+        return { data: result };
+      } else {
+        return [];
+      }
+    }
+  } else {
+    handleError(response.response.data.errors);
+  }
+}; */
+export const handleResponse = (response: any, page?: string, requestType?: string) => {
+  if (response === undefined) {
+    handleError(response.response.data.errors);
+  } else if (response.status === 200) {
+    console.log("Response data:", response.data);
+
+    const result = response.data.data ?? response.data;
+
+    if (response.data.pagination) {
+      result["pagination"] = response.data.pagination;
+    }
+
+    if (requestType === "Post" || requestType === "Delete") {
+      handleSuccess(response?.data?.message);
+    }
+
+    if (Array.isArray(result) && result.length > 0) {
+      return result;
+    } else if (typeof result === "object" && !Array.isArray(result) && result) {
+      if (response.data.token !== undefined) {
+        localStorage.setItem("token", response.data.token);
+        return { ...result, token: response.data.token };
+      }
       return result;
     } else {
       if (page && mainRequestNeededEmptyData.includes(page)) {

@@ -137,7 +137,7 @@
             <Route 
               path="/settings" 
               element={
-                <ProtectedRoute roles={['ADMIN']}>
+                <ProtectedRoute roles={['ADMIN', 'TEMPLATECREATOR']}>
                   <div>Settings Page (Admin Only)</div>
                 </ProtectedRoute>
               } 

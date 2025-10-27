@@ -413,5 +413,14 @@ export const deleteUser = async (id:string) => {
     throw error;
   }
 }; 
+export async function getAnalytics() {
+  //const token = localStorage.getItem("token"); // your stored JWT token
+   console.log("Fetching analatics...");
+  const response = await api.get('/analytics' );
+   console.log("Fetching analatics result...",response);
+
+  return handleResponse(response);
+}
+
 export default api;
 
