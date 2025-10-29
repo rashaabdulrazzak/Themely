@@ -290,31 +290,89 @@ export const editTemplateWithFile = async (templateData: Template, imageFile: Fi
       formData.append('image', imageFile);
     }
 
-    // Use raw fetch instead of your API client
-    const token = localStorage.getItem('token'); // or however you get your token
-    
-    const response = await fetch(`http://localhost:5001/api/v1/template/${templateData.id}`, {
-      method: 'PATCH',
+    // ✅ Using axios (api instance)
+    const response = await api.patch(`/template/${templateData.id}`, formData, {
       headers: {
-        // Only include auth header - let browser set Content-Type for FormData
-        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
       },
-      body: formData, // Raw FormData, not JSON
+    
+      transformRequest: [(data) => data], // Prevent axios from transforming FormData
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
+    return handleResponse(response,'post');
     
   } catch (error) {
-    console.error('Upload error:', error);
+    handleError(error);
     throw error;
   }
 };
+
+/* export async function createTemplateWithFile(templateData:Template, imageFile:File | null) {
+ 
+ try {
+    console.log("add template...",templateData.id);
+     // Use FormData to send image + data
+  const formData = new FormData();
+  formData.append('name', templateData.name);
+  formData.append('price', templateData.price.toString());
+  formData.append('category', templateData.category);
+  formData.append('userId', templateData.userId);
+  if (imageFile) formData.append('image', imageFile);
+for (const pair of formData.entries()) {
+  console.log(pair[0], pair[1]);
+}
+  // Replace with your endpoint
+  const response = await api.post('/template', formData);
+  console.log("add template response...",response);
+  return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+} */
+
+export async function createTemplateWithFile(templateData: Template, imageFile: File | null) {
+  try {
+    console.log("add template...", templateData.id);
+    
+    const formData = new FormData();
+    formData.append('name', templateData.name);
+    formData.append('price', templateData.price.toString());
+    formData.append('category', templateData.category);
+    formData.append('userId', templateData.userId);
+    
+    // ✅ ONLY append from imageFile parameter, not from templateData
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+    console.log("FormData prepared for upload.",imageFile);
+    
+    // 🔍 Add this debug line to see what you're actually sending
+    console.log('ImageFile object:', imageFile);
+    console.log('Is File?', imageFile instanceof File);
+    
+    for (const pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+    console.log("Submitting to /template endpoint...", formData);
+    
+     const response = await api.post('/template', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      // OR even better, don't set it at all:
+      // headers: {},
+      transformRequest: [(data) => data], // Prevent axios from transforming FormData
+    });
+    
+    console.log("add template response...", response);
+    return handleResponse(response,'Post');
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+}
+// categories
 export const getCategories = async () => {
   try {
     const response = await api.get('/categories');
@@ -324,6 +382,7 @@ export const getCategories = async () => {
     throw error;
   }
 };
+
 // payment 
 export const getPayments = async () => {
   try {

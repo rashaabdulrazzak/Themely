@@ -47,30 +47,45 @@ import { emptyData, mainRequestNeededEmptyData } from "./requestedData";
   }
 }; */
 export const handleResponse = (response: any, page?: string, requestType?: string) => {
+  
   if (response === undefined) {
+    console.log("index Handling response:", response);
     handleError(response.response.data.errors);
-  } else if (response.status === 200) {
+  } else if (response.status === 200 || response.status === 201) { // ✅ Added 201
     console.log("Response data:", response.data);
 
     const result = response.data.data ?? response.data;
+    console.log("Extracted result:", result);
 
+    // Add pagination if present
     if (response.data.pagination) {
       result["pagination"] = response.data.pagination;
     }
 
-    if (requestType === "Post" || requestType === "Delete") {
-      handleSuccess(response?.data?.message);
+    // ✅ Show success message for 201 (Created) or Post/Delete requests
+    if (response.status === 201 || requestType === "Post" || requestType === "Delete") {
+      if (response.data.success && response.data.message) {
+        handleSuccess(response.data.message);
+      } else if (response?.data?.message) {
+        handleSuccess(response.data.message);
+      }
     }
 
+    // Handle arrays
     if (Array.isArray(result) && result.length > 0) {
       return result;
-    } else if (typeof result === "object" && !Array.isArray(result) && result) {
+    } 
+    // Handle objects
+    else if (typeof result === "object" && !Array.isArray(result) && result) {
+      // Handle token (for auth responses)
       if (response.data.token !== undefined) {
         localStorage.setItem("token", response.data.token);
         return { ...result, token: response.data.token };
       }
       return result;
-    } else {
+    } 
+    // Handle empty/fallback cases
+    else {
       if (page && mainRequestNeededEmptyData.includes(page)) {
         return emptyData[page!.toLowerCase()];
       } else if (typeof result === "string") {
@@ -79,7 +94,8 @@ export const handleResponse = (response: any, page?: string, requestType?: strin
         return [];
       }
     }
-  } else {
+  } 
+  else {
     handleError(response.response.data.errors);
   }
 };

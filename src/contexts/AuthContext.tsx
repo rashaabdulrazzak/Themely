@@ -70,8 +70,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Full response:', response);
       
       const accessToken = response?.token;
-      let userData = response?.user || response?.data || response;
-      
+      const userData = response?.user || response?.data || response;
+      console.log('Extracted user data:', userData);
       if (!accessToken) {
         throw new Error("No access token received");
       }

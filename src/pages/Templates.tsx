@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -9,12 +9,13 @@ import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import {
+  createTemplateWithFile,
   deleteTemplate,
   editTemplateWithFile,
   getCategories,
   getTemplates,
 } from "../services";
-import type { Category, DialogState } from "../modules";
+import type { Category } from "../modules";
 import { Toast } from "primereact/toast";
 
 type Template = {
@@ -87,8 +88,14 @@ const Templates: React.FC = () => {
 const [deleteProductsDialog, setDeleteProductsDialog] = useState<boolean>(false);
 const [deleteProductDialog, setDeleteProductDialog] = useState<boolean>(false);
 const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
-const [dialog, setDialog] = useState<DialogState>({ type: null });
-
+const [addDialog, setAddDialog] = useState(false);
+const [newTemplate, setNewTemplate] = useState<Template | null>(null);
+const [addImageFile, setAddImageFile] = useState<File | null>(null);
+const [addImagePreview, setAddImagePreview] = useState<string | null>(null);
+const [addUploadLoading, setAddUploadLoading] = useState(false);
+const [addImageError, setAddImageError] = useState<string | null>(null);
+const user =localStorage.getItem("user")
+console.log("Current user from localStorage:", user);
 const toast = useRef<Toast>(null);
   // Derived filters (unique categories/userIds from current data)
   // const categories = Array.from(new Set(templates.map(t => t.category))).sort();
@@ -165,7 +172,6 @@ const toast = useRef<Toast>(null);
     reader.readAsDataURL(file);
   };
 
-  // 2. Debug your handleSave function
 const handleSave = async () => {
   console.log("🚀 handleSave called");
   console.log("selectedTemplate:", selectedTemplate);
@@ -179,15 +185,16 @@ const handleSave = async () => {
         imageFile: imageFile,
       });
 
+      // ✅ response IS the template object directly
       const updatedTemplate = await editTemplateWithFile(
         selectedTemplate,
         imageFile
       );
-      console.log("✅ Template updated:", updatedTemplate);
+      console.log("✅ Updated template:", updatedTemplate);
 
       setTemplates((prev) =>
         prev.map((t) =>
-          t.id === updatedTemplate.data.id ? updatedTemplate.data : t
+          t.id === updatedTemplate.id ? updatedTemplate : t
         )
       );
 
@@ -202,7 +209,7 @@ const handleSave = async () => {
       toast.current?.show({
         severity: 'success',
         summary: 'Successful',
-        detail: `Template "${updatedTemplate.data.name}" updated successfully`,
+        detail: `Template "${updatedTemplate.name}" updated successfully`,
         life: 3000,
       });
     } catch (error) {
@@ -249,14 +256,13 @@ const handleSave = async () => {
       maximumFractionDigits: 0,
     }).format(n);
   const imageBodyTemplate = (template: Template) => {
-    // const host = "https://server.thimly.com"; // make sure this is the real host
-    // const src = `${host}/uploads/${encodeURIComponent(template.image)}`;
+  
     return (
       <img
         src={getImageUrl(template.image)}
         alt={template.name ?? template.image}
         className="w-6rem shadow-2 border-round"
-        crossOrigin="anonymous" // harmless unless you enable CORS on the server
+        crossOrigin="anonymous" //todo  harmless unless you enable CORS on the server
         loading="lazy"
       />
     );
@@ -443,6 +449,23 @@ const hideDeleteProductDialog = () => {
   setDeleteProductDialog(false);
   setTemplateToDelete(null);
 };
+const openAddDialog = () => {
+    const currentUserId = user ? JSON.parse(user).id : "";
+
+  setNewTemplate({
+    id: 0, // Or let your backend assign automatically
+    name: "",
+    image: "",
+    price: 0,
+    category: "OTHER",
+    userId: currentUserId,
+  });
+  setAddDialog(true);
+  setAddImageFile(null);
+  setAddImagePreview(null);
+  setAddImageError(null);
+};
+
 
 
   return (
@@ -451,14 +474,21 @@ const hideDeleteProductDialog = () => {
       <div className="bg-white rounded-xl shadow-md p-6">
         <div className="bg-white rounded-xl shadow-md p-6 mb-6 flex justify-between items-center">
           <h2 className="text-2xl font-bold">Templates</h2>
+          <div className="flex gap-2">
+           <Button 
+                              label="Add Template" 
+                              icon="pi pi-plus" 
+                              className="p-button-sm p-button-primary add-btn"
+                             onClick={openAddDialog}
+                          />
           <Button
-            label={`Delete Selected (${selectedTemplates.length})`}
+            label={`Bulk Delete (${selectedTemplates.length})`}
             icon="pi pi-trash"
-            className="p-button-danger"
+            className="p-button-sm p-button-secondary p-button p-component delete-btn"
          onClick={confirmDeleteSelected}
       disabled={!selectedTemplates || selectedTemplates.length === 0} />
         </div>
-
+ </div>
         <DataTable
           value={templates}
           className="p-datatable-hoverable"
@@ -474,6 +504,7 @@ const hideDeleteProductDialog = () => {
           loading={loading}
           totalRecords={totalRecords}
           selection={selectedTemplates}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onSelectionChange={(e: any) => {
             const val = e?.value;
             if (Array.isArray(val)) {
@@ -754,7 +785,7 @@ const hideDeleteProductDialog = () => {
               <Button
                 label="Cancel"
                 icon="pi pi-times"
-                className="p-button-sm p-button-outlined"
+                className="p-button-sm cancel-btn"
                 onClick={() => {
                   setEditDialog(false);
                   setImageFile(null);
@@ -765,7 +796,7 @@ const hideDeleteProductDialog = () => {
               <Button
                 label={uploadLoading ? "Saving..." : "Save"}
                 icon={uploadLoading ? "pi pi-spin pi-spinner" : "pi pi-check"}
-                className="p-button-sm p-button-success"
+                className="p-button-sm save-btn mr-2"
                 onClick={handleSave}
                 disabled={uploadLoading || !!imageError} />
             </div>
@@ -840,6 +871,181 @@ const hideDeleteProductDialog = () => {
       </span>
     )}
   </div>
+</Dialog>
+{/* Add Template Dialog would go here */}
+<Dialog
+  header="Add Template"
+  visible={addDialog}
+  style={{ width: "550px" }}
+  modal
+  onHide={() => {
+    setAddDialog(false);
+    setNewTemplate(null);
+    setAddImageFile(null);
+    setAddImagePreview(null);
+    setAddImageError(null);
+  }}
+  className="rounded-xl"
+>
+  {!newTemplate 
+    ? (
+      <div className="flex items-center justify-center p-4">
+        <i className="pi pi-spin pi-spinner text-blue-500 mr-2"></i>
+        <span>Loading...</span>
+      </div>
+    ) : (
+    <div className="flex flex-col gap-4">
+      {addUploadLoading && (
+        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50 rounded-xl">
+          <div className="bg-white p-4 rounded-lg shadow-lg flex items-center gap-3">
+            <i className="pi pi-spin pi-spinner text-blue-500"></i>
+            <span>Adding template...</span>
+          </div>
+        </div>
+      )}
+      {/* Name */}
+      <div className="flex flex-col gap-1">
+        <label className="font-medium">Name</label>
+        <InputText
+          value={newTemplate.name}
+          onChange={e => setNewTemplate({ ...newTemplate, name: e.target.value })}
+          disabled={addUploadLoading}
+        />
+      </div>
+      {/* Image Upload */}
+      <div className="flex flex-col gap-2">
+        <label className="font-medium">Template Image</label>
+        {addImagePreview && (
+          <div className="mb-2">
+            <img
+              src={addImagePreview}
+              alt="Preview"
+              className="w-32 h-20 object-cover border rounded"
+            />
+            <p className="text-sm text-green-600 mt-1">Preview (not saved yet)</p>
+          </div>
+        )}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={e => {
+            const file = e.target.files?.[0];
+            setAddImageError(null);
+            if (!file) {
+              setAddImageFile(null);
+              setAddImagePreview(null);
+              return;
+            }
+            if (!ALLOWED_TYPES.includes(file.type)) {
+              setAddImageError("Please select a valid image file (JPEG, PNG, WebP, or GIF)");
+              return;
+            }
+            if (file.size > MAX_FILE_SIZE) {
+              setAddImageError(`File size must be less than ${MAX_FILE_SIZE/(1024*1024)}MB`);
+              return;
+            }
+            setAddImageFile(file);
+            const reader = new FileReader();
+            reader.onload = e => setAddImagePreview(e.target?.result as string);
+            reader.readAsDataURL(file);
+          }}
+          disabled={addUploadLoading}
+          className="text-sm"
+        />
+        {addImageError && <small className="text-red-500">{addImageError}</small>}
+        <small className="text-gray-500">Max size: 5MB. Formats: JPEG, PNG, WebP, GIF</small>
+      </div>
+      {/* Price */}
+      <div className="flex flex-col gap-1">
+        <label className="font-medium">Price (USD)</label>
+        <InputText
+          value={String(newTemplate.price ?? "")}
+          onChange={e => {
+            const val = Number(e.target.value.replace(/[^\d.]/g, ""));
+            setNewTemplate({...newTemplate, price: isNaN(val) ? 0 : val });
+          }}
+          disabled={addUploadLoading}
+        />
+      </div>
+      {/* Category Dropdown */}
+      <div className="flex flex-col gap-1">
+        <label className="font-medium">Category</label>
+        {categoriesLoading ? (
+          <div className="flex items-center gap-2 p-2 border rounded">
+            <i className="pi pi-spin pi-spinner text-blue-500"></i>
+            <span className="text-gray-500">Loading categories...</span>
+          </div>
+        ) : (
+          <Dropdown
+            value={newTemplate.category}
+            options={categories.map(cat => ({ label: cat, value: cat }))}
+            onChange={e => setNewTemplate({...newTemplate, category: e.value })}
+            placeholder="Select a category"
+            disabled={addUploadLoading}
+            className="w-full"
+          />
+        )}
+      </div>
+      {/* userId */}
+      <div className="flex flex-col gap-1">
+        <label className="font-medium">User ID</label>
+        <InputText
+          value={newTemplate.userId}
+          onChange={e => setNewTemplate({ ...newTemplate, userId: e.target.value })}
+          disabled={addUploadLoading}
+        />
+      </div>
+      <div className="flex justify-end gap-2 mt-4">
+        
+        <Button
+  label={addUploadLoading ? "Saving..." : "Add"}
+  icon={addUploadLoading ? "pi pi-spin pi-spinner" : "pi pi-check"}
+  className="p-button-sm save-btn mr-2"
+  onClick={async () => {
+    setAddUploadLoading(true);
+    try {
+      const result = await createTemplateWithFile(newTemplate, addImageFile);
+      console.log("✅ Created template:", result);
+      
+      // ✅ result is already the template object
+      setTemplates(prev => [result, ...prev]);
+      
+      setAddDialog(false);
+      setNewTemplate(null);
+      setAddImageFile(null);
+      setAddImagePreview(null);
+      setAddImageError(null);
+      
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Successful',
+        detail: `Template "${result.name}" added successfully`,
+        life: 3000,
+      });
+    } catch (error) {
+      console.error("❌ Add template failed:", error);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to add template',
+        life: 3000,
+      });
+    } finally {
+      setAddUploadLoading(false);
+    }
+  }}
+  disabled={addUploadLoading || !!addImageError}
+/>
+        <Button
+          label="Cancel"
+          icon="pi pi-times"
+          className="p-button-sm cancel-btn"
+          onClick={() => setAddDialog(false)}
+          disabled={addUploadLoading}
+        />
+      </div>
+    </div>
+  )}
 </Dialog>
 
 
