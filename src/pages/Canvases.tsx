@@ -38,7 +38,8 @@ const Canvases: React.FC = () => {
     const [editDialog, setEditDialog] = useState(false);
     const [addDialog, setAddDialog] = useState(false);
     const [loading, setLoading] = useState(true);
-
+    const user =localStorage.getItem("user")
+    const userRole = user ? JSON.parse(user).role : null;   
     const [globalFilter, setGlobalFilter] = useState('');
     const dt = useRef<DataTable<Canvas[]>>(null);
 
@@ -152,6 +153,7 @@ const Canvases: React.FC = () => {
         <div className="p-6 bg-gray-100 min-h-screen">
             <div className="bg-white rounded-xl shadow-md p-6 mb-6 flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Canvases</h2>
+                {(userRole === 'ADMIN' || userRole === 'TEMPLATECREATOR') && (
                 <Button 
                     label="Add Canvas" 
                     icon="pi pi-plus" 
@@ -160,7 +162,7 @@ const Canvases: React.FC = () => {
                         setSelectedCanvas({ id: 0, name: '', user: '', createdAt: new Date().toISOString().slice(0,10) });
                         setAddDialog(true);
                     }}
-                />
+                />)}
             </div>
 
             <div className="bg-white rounded-xl shadow-md p-6">

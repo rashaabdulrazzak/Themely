@@ -1,7 +1,7 @@
 // src/auth/AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import  { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { authLogin } from "../services";
-import type { User } from "../modules";
+import type { Role, User } from "../modules";
 
 
 
@@ -100,6 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("user", JSON.stringify(normalizedUser));
       setUser(normalizedUser);
       
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('AuthContext: Login failed:', error);
       throw error;
@@ -138,6 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = (): AuthContextType => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within an AuthProvider");

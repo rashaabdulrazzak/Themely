@@ -96,6 +96,8 @@ const [addUploadLoading, setAddUploadLoading] = useState(false);
 const [addImageError, setAddImageError] = useState<string | null>(null);
 const user =localStorage.getItem("user")
 console.log("Current user from localStorage:", user);
+console.log("Parsing user...", user ? JSON.parse(user) : null);
+const userRole = user ? JSON.parse(user).role : null;
 const toast = useRef<Toast>(null);
   // Derived filters (unique categories/userIds from current data)
   // const categories = Array.from(new Set(templates.map(t => t.category))).sort();
@@ -259,11 +261,12 @@ const handleSave = async () => {
   
     return (
       <img
-        src={getImageUrl(template.image)}
-        alt={template.name ?? template.image}
-        className="w-6rem shadow-2 border-round"
-        crossOrigin="anonymous" //todo  harmless unless you enable CORS on the server
-        loading="lazy"
+          src={getImageUrl(template.image)}
+  alt={template.name ?? template.image}
+  style={{ width: 250, height: 150, objectFit: 'cover', borderRadius: '8px' }} 
+  crossOrigin="anonymous"
+  loading="lazy"
+
       />
     );
   };
@@ -474,6 +477,7 @@ const openAddDialog = () => {
       <div className="bg-white rounded-xl shadow-md p-6">
         <div className="bg-white rounded-xl shadow-md p-6 mb-6 flex justify-between items-center">
           <h2 className="text-2xl font-bold">Templates</h2>
+          {(userRole === 'ADMIN' || userRole === 'TEMPLATECREATOR') && (
           <div className="flex gap-2">
            <Button 
                               label="Add Template" 
@@ -481,6 +485,7 @@ const openAddDialog = () => {
                               className="p-button-sm p-button-primary add-btn"
                              onClick={openAddDialog}
                           />
+                          
           <Button
             label={`Bulk Delete (${selectedTemplates.length})`}
             icon="pi pi-trash"
@@ -488,6 +493,7 @@ const openAddDialog = () => {
          onClick={confirmDeleteSelected}
       disabled={!selectedTemplates || selectedTemplates.length === 0} />
         </div>
+          )}
  </div>
         <DataTable
           value={templates}

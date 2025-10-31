@@ -64,7 +64,7 @@
             <Route 
               path="/templates" 
               element={
-                <ProtectedRoute roles={['ADMIN', 'TEMPLATECREATOR']}>
+                <ProtectedRoute roles={['ADMIN', 'TEMPLATECREATOR','USER','DESIGNER']}>
                   <Templates />
                 </ProtectedRoute>
               } 
@@ -84,7 +84,7 @@
             <Route 
               path="/canvases" 
               element={
-                <ProtectedRoute roles={['ADMIN', 'TEMPLATECREATOR']}>
+                <ProtectedRoute roles={['ADMIN', 'TEMPLATECREATOR', 'USER','DESIGNER']}>
                   <Canvases />
                 </ProtectedRoute>
               } 

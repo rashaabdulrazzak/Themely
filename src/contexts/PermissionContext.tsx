@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext'; // Import useAuth
 
 // Define types locally if you don't have a separate types file yet
-export type Role = 'ADMIN' | 'TEMPLATECREATOR' | 'USER';
+export type Role = 'ADMIN' | 'TEMPLATECREATOR' | 'USER' | 'DESIGNER';
 export type Status = 'ACTIVE' | 'INACTIVE' | 'BANNED';
 export type Permission = 
   | 'ADMIN_FULL_ACCESS'
@@ -77,7 +77,16 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'REVIEW_CREATE',
     'DOWNLOAD_VIEW_OWN',
   ],
-  
+  DESIGNER:[
+    // Canvas permissions
+    'CANVAS_VIEW_ALL',
+    'CANVAS_EDIT_ALL',
+   
+    // Template permissions
+    'TEMPLATE_VIEW_ALL',
+    'TEMPLATE_EDIT_ALL',
+   
+  ],
   TEMPLATECREATOR: [
     // Canvas permissions
     'CANVAS_VIEW_OWN',

@@ -18,13 +18,13 @@ export const navbarConfig: NavbarMenuItem[] = [
     label: 'Canvases',
     icon: 'pi pi-palette',
     url: '/canvases',
-    roles: ['TEMPLATECREATOR', 'ADMIN', 'USER']
+    roles: ['TEMPLATECREATOR', 'ADMIN', 'USER','DESIGNER']
   },
   {
     label: 'Templates',
     icon: 'pi pi-image',
     url: '/templates',
-    roles: ['TEMPLATECREATOR', 'USER', 'ADMIN']
+    roles: ['TEMPLATECREATOR', 'USER', 'ADMIN','DESIGNER']
   },
   {
     label: 'Downloads',
