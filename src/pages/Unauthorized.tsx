@@ -1,5 +1,4 @@
 // pages/Unauthorized.tsx - FIXED VERSION
-// Don't use usePermissions here since this page is outside PermissionProvider!
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';

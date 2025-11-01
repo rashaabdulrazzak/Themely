@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Bounce, toast } from "react-toastify";
 import { authLogout } from ".";
 import { emptyData, mainRequestNeededEmptyData } from "./requestedData";

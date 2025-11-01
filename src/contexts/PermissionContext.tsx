@@ -174,8 +174,8 @@ useEffect(() => {
   console.log('PermissionContext: Syncing with AuthContext user:', user);
   
   if (user) {
-    setUserRole(user.role);
-    setUserId(user.id);
+     setUserRole(user.role)
+    setUserId(user.id.toString());
     console.log('PermissionContext: Updated role to:', user.role, 'userId to:', user.id);
   } else if (!authLoading) {
     // Only clear if auth is done loading and there's no user

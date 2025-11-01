@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -59,10 +60,10 @@ const Downloads: React.FC = () => {
     </div>
   );
 
-  const openEditDialog = (d: Download) => {
+ /*  const openEditDialog = (d: Download) => {
     setSelected({ ...d });
     setEditDialog(true);
-  };
+  }; */
 
   const handleDelete = async(d: Download) => {
     if (window.confirm(`Are you sure you want to delete "${d.fileName}"?`)) {
@@ -81,7 +82,6 @@ const Downloads: React.FC = () => {
     setSelected(null);
   };
 
-  // Extract array from common API shapes (axios/fetch/backends with {data:{...}})
   const extractItems = (res: any): any[] => {
     const payload = res?.data ?? res;
     if (Array.isArray(payload)) return payload;
@@ -130,7 +130,6 @@ const Downloads: React.FC = () => {
 
   function hideDialog(): void {
     setEditDialog(false);
-    // If you have an addDialog state, set it to false here as well
     // setAddDialog(false);
     setSelected(null);
   }
@@ -161,7 +160,6 @@ const Downloads: React.FC = () => {
         </DataTable>
       </div>
 <Dialog
-  // Dynamically set the header based on whether an ID exists
   header={selected && selected.id ? "Edit Download" : "Add Download"}
   visible={editDialog}
   style={{ width: '480px' }}
@@ -212,7 +210,7 @@ const Downloads: React.FC = () => {
       <div className="flex flex-col gap-1">
         <label>User</label>
         <InputText
-          value={selected.user || 'N/A'} // Show 'N/A' if user is not available
+          value={selected.user || 'N/A'} 
           readOnly
           disabled
           className="p-disabled"

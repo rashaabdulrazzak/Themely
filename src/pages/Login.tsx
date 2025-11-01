@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // pages/Login.tsx (or components/Login.tsx)
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";

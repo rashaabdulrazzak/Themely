@@ -2,10 +2,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5001/api/v1', // consider making this an absolute URL in dev if needed
+  baseURL: 'http://localhost:5001/api/v1',
   headers: { 'Content-Type': 'application/json' ,
-    // Authorization header will be set in the interceptor below
-        Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1MjQ3OTQwLTQ5NDMtNDJkZi04OGRjLWRkYWVhNDMzMzJhYiIsInVzZXJuYW1lIjoic2F3eSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc1NzcxODE3NSwiZXhwIjoxNzY1NDk0MTc1fQ.r4im-Stuiv3IKhgtPhOQuQdpO95fxZbJJG1lQ1cbwmI`,
+  Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ1MjQ3OTQwLTQ5NDMtNDJkZi04OGRjLWRkYWVhNDMzMzJhYiIsInVzZXJuYW1lIjoic2F3eSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc1NzcxODE3NSwiZXhwIjoxNzY1NDk0MTc1fQ.r4im-Stuiv3IKhgtPhOQuQdpO95fxZbJJG1lQ1cbwmI`,
 
   },
 

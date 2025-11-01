@@ -332,7 +332,7 @@ setEditedData(Array.isArray(analyticsData.templateMonthlyStats) ? analyticsData.
             ]}
           />
         </Card>
-        <Card className="p-4 rounded-xl shadow hover:shadow-lg transition">
+        {/* <Card className="p-4 rounded-xl shadow hover:shadow-lg transition">
           <h3 className="text-lg font-bold mb-2">New Users Growth</h3>
           <Charts
             labels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"]}
@@ -351,7 +351,7 @@ setEditedData(Array.isArray(analyticsData.templateMonthlyStats) ? analyticsData.
               },
             ]}
           />
-        </Card>
+        </Card> */}
         <Card className="p-4 rounded-xl shadow hover:shadow-lg transition">
           <h3 className="text-lg font-bold mb-2">Template Activity</h3>
           <Charts
@@ -372,7 +372,7 @@ setEditedData(Array.isArray(analyticsData.templateMonthlyStats) ? analyticsData.
             ]}
           />
         </Card>
-        <Card className="p-4 rounded-xl shadow hover:shadow-lg transition">
+       {/*  <Card className="p-4 rounded-xl shadow hover:shadow-lg transition">
           <h3 className="text-lg font-bold mb-2">Downloads by Canvas</h3>
           <Charts
             labels={[
@@ -397,7 +397,7 @@ setEditedData(Array.isArray(analyticsData.templateMonthlyStats) ? analyticsData.
               },
             ]}
           />
-        </Card>
+        </Card> */}
       </div>
 
       {/* Recent Activity Table */}

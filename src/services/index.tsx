@@ -102,7 +102,7 @@ export const getTemplatesbyId = async (id:string) => {
     throw error;
   }
 };
-export const getTemplates = async () => {
+/* export const getTemplates = async () => {
   try {
     console.log("Using manual authorization header...");
     
@@ -126,9 +126,38 @@ export const getTemplates = async () => {
     handleError(error);
     throw error;
   }
+}; */
+
+
+export const getTemplates = async (page: number = 1) => {
+  try {
+    console.log("Using manual authorization header...");
+    
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error("No token available");
+    }
+    
+    const response = await api.get('/template/all', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      params: {
+        page,
+        limit: 10   
+      }
+    });
+    
+    console.log("✅ Manual header SUCCESS:", response.status);
+    return handleResponse(response);
+    
+  } catch (error: any) {
+    console.log("❌ Manual header FAILED:", error.response?.status);
+    handleError(error);
+    throw error;
+  }
 };
-
-
 
 
 export const deleteTemplate = async (id:string) => {
@@ -165,7 +194,6 @@ export const editTemplate = async (templateData: Template, imageFile: File | nul
     formData.append('userId', templateData.userId || '');
 
     if (imageFile) {
-      console.log('✅ Appending image file to FormData');
       formData.append('image', imageFile);
     } else {
       console.log('❌ No image file to append');
@@ -173,7 +201,7 @@ export const editTemplate = async (templateData: Template, imageFile: File | nul
 
     // Debug FormData content
     console.log('📦 FormData contents:');
-    for (let pair of formData.entries()) {
+    for (const pair of formData.entries()) {
       if (pair[1] instanceof File) {
         console.log(`${pair[0]}:`, `File: ${pair[1].name} (${pair[1].size} bytes, ${pair[1].type})`);
       } else {
@@ -216,7 +244,7 @@ export const deleteDownload = async (id:string) => {
 };
 // canvases
 //export const getCanvases = () => api.get('/canvases');
-export const getCanvases = async () => {
+export const getCanvases = async (page: number = 1) => {
   try {
     console.log("Using manual authorization header...");
     
@@ -229,6 +257,10 @@ export const getCanvases = async () => {
     const response = await api.get('/canvases', {
       headers: {
         'Authorization': `Bearer ${token}`
+      },
+         params: {
+        page,
+        limit: 10   
       }
     });
     
@@ -276,6 +308,18 @@ export const deleteCanvas = async (id:string) => {
     throw error;
   }
 }; 
+export const createCanvas = async (data:Canvas) => {
+  try {
+    console.log("create canvas...",data);
+    const response = await api.post('/canvases',data);
+    console.log("create canvas...",response);
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  } 
+};
 //export const getDownloads = () => api.get('/download');
 export const editTemplateWithFile = async (templateData: Template, imageFile: File | null) => {
   try {
@@ -290,13 +334,13 @@ export const editTemplateWithFile = async (templateData: Template, imageFile: Fi
       formData.append('image', imageFile);
     }
 
-    // ✅ Using axios (api instance)
+   
     const response = await api.patch(`/template/${templateData.id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     
-      transformRequest: [(data) => data], // Prevent axios from transforming FormData
+      transformRequest: [(data) => data], 
     });
 
     return handleResponse(response,'post');
@@ -341,28 +385,21 @@ export async function createTemplateWithFile(templateData: Template, imageFile: 
     formData.append('category', templateData.category);
     formData.append('userId', templateData.userId);
     
-    // ✅ ONLY append from imageFile parameter, not from templateData
     if (imageFile) {
       formData.append('image', imageFile);
     }
-    console.log("FormData prepared for upload.",imageFile);
-    
-    // 🔍 Add this debug line to see what you're actually sending
-    console.log('ImageFile object:', imageFile);
-    console.log('Is File?', imageFile instanceof File);
+
     
     for (const pair of formData.entries()) {
       console.log(pair[0], pair[1]);
     }
-    console.log("Submitting to /template endpoint...", formData);
     
      const response = await api.post('/template', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      // OR even better, don't set it at all:
-      // headers: {},
-      transformRequest: [(data) => data], // Prevent axios from transforming FormData
+    
+      transformRequest: [(data) => data], 
     });
     
     console.log("add template response...", response);
@@ -438,7 +475,6 @@ export const deleteReview = async (id:string) => {
 // user
 export const getUsers = async () => {
   try {
-    // If your backend uses /users (plural), change this accordingly.
     console.log("Fetching users...");
     const response = await api.get('/user');
 
