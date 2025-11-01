@@ -39,12 +39,11 @@ export type Template = {
 
 };
 export interface IPagination {
-    total_items: number;
+    totalItems: number;
     count: number;
     limit: number;
-    current_page: number;
-    total_pages: number;
-    has_more: boolean;
+    page: number;
+    totalPages: number;
     }
 
   export  type Canvas = {

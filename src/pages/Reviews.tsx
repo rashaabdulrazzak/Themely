@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -60,7 +61,6 @@ const Reviews: React.FC = () => {
   };
 
 
-  // Extract array from common API shapes (axios/fetch/backends with {data:{...}})
   const extractItems = (res: any): any[] => {
     const payload = res?.data ?? res;
     if (Array.isArray(payload)) return payload;

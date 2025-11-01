@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePermissions } from '../contexts/PermissionContext';
+import { usePermissions, type Panel, type Permission } from '../contexts/PermissionContext';
 
 interface PermissionGateProps {
   children: React.ReactNode;
@@ -26,12 +26,12 @@ export const PermissionGate: React.FC<PermissionGateProps> = ({
 
   // Check permission
   if (permission) {
-    checks.push(permissions.hasPermission(permission));
+    checks.push(permissions.hasPermission(permission as Permission));
   }
 
   // Check panel access
   if (panel) {
-    checks.push(permissions.canAccessPanel(panel));
+    checks.push(permissions.canAccessPanel(panel as Panel));
   }
 
   // Check resource management

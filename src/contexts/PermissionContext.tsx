@@ -216,7 +216,7 @@ useEffect(() => {
     }
     
     // Template Creator can only access insights panel
-    if (userRole === 'TEMPLATECREATOR' || userRole === 'TEMPLATECREATOR') {
+    if (userRole === 'TEMPLATECREATOR' ) {
       const canAccess = panel === 'insights';
       console.log(`PermissionContext: canAccessPanel - TEMPLATECREATOR can access ${panel}:`, canAccess);
       return canAccess;
@@ -283,6 +283,7 @@ useEffect(() => {
 };
 
 // Export the hook
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePermissions = (): PermissionContextType => {
   const context = useContext(PermissionContext);
   if (context === undefined) {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import React, { useState, useRef,useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -12,7 +12,7 @@ import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import { createCanvas, deleteCanvas, editCanvas, getCanvases } from '../services';
-import type { IPagination } from '../modules';
+ import type { IPagination } from '../modules';
 import { InputNumber } from 'primereact/inputnumber';
 import type { Toast } from 'primereact/toast';
 
@@ -54,7 +54,6 @@ const Canvases: React.FC = () => {
     const [limit, setLimit] = useState(10);
     const [totalRecords, setTotalRecords] = useState(0);
     const [pagination, setPagination] = useState<IPagination>();
-    const [first, setFirst] = useState(0);
     const [pageNo, setPageNo] = useState<number>(pagination?.page || 0);
     const [currentPage, setCurrentPage] = useState<number>(pagination?.page || 1);
     const [totalPages, setTotalPages] = useState<number>(pagination?.totalPages || 1);
@@ -276,7 +275,7 @@ const confirmDeleteCanvas = (canvas: Canvas) => {
       getCanvases(currentPage).then((newCanvases) => {
         setCanvases(newCanvases);
         setPagination(newCanvases!.pagination);
-        setFirst(currentPage);
+        //setFirst(currentPage);
         setCurrentPage(currentPage);
         setTotalPages(newCanvases!.pagination.totalPages);
       });
@@ -285,7 +284,7 @@ const confirmDeleteCanvas = (canvas: Canvas) => {
     const paginatorTemplate = {
       layout:
         " FirstPageLink PrevPageLink CurrentPageReport  NextPageLink LastPageLink JumpToPageInput",
-      FirstPageLink: (options: any) => {
+      FirstPageLink: () => {
         return (
          <button
       type="button"
@@ -309,7 +308,7 @@ const confirmDeleteCanvas = (canvas: Canvas) => {
           </button>
         );
       },
-      CurrentPageReport: (options: any) => {
+      CurrentPageReport: () => {
         return (
           <span
             className="mx-3"
@@ -319,7 +318,7 @@ const confirmDeleteCanvas = (canvas: Canvas) => {
           </span>
         );
       },
-      JumpToPageInput: (options: any) => {
+      JumpToPageInput: () => {
         return (
           <div>
             <span className="mx-3" style={{ color: "black", userSelect: "none" }}>
@@ -344,7 +343,7 @@ const confirmDeleteCanvas = (canvas: Canvas) => {
           </div>
         );
       },
-      NextPageLink: (options: any) => {
+      NextPageLink: () => {
         return (
           <button
             type="button"
@@ -364,7 +363,7 @@ const confirmDeleteCanvas = (canvas: Canvas) => {
           </button>
         );
       },
-      LastPageLink: (options: any) => {
+      LastPageLink: () => {
         return (
           <button
             type="button"
