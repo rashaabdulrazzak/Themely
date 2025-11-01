@@ -1,7 +1,7 @@
 // components/ProtectedRoute.tsx
 import { Navigate } from "react-router-dom";
 import { usePermissions } from "../contexts/PermissionContext";
-import type { Role } from "../contexts/AuthContext";
+import type { Role } from "../modules";
 
 interface ProtectedRouteProps {
   roles: Role[];

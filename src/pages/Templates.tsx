@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useRef, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -108,7 +107,7 @@ const Templates: React.FC = () => {
   const userRole = user ? JSON.parse(user).role : null;
   const basePage = 1;
   const [pagination, setPagination] = useState<IPagination>();
-  const [first, setFirst] = useState(0);
+  // const [first, setFirst] = useState(0);
   const [pageNo, setPageNo] = useState<number>(pagination?.page || 0);
   const [currentPage, setCurrentPage] = useState<number>(pagination?.page || 1);
   const [totalPages, setTotalPages] = useState<number>(
@@ -519,7 +518,7 @@ const Templates: React.FC = () => {
     getTemplates(currentPage).then((newTemplates) => {
       setTemplates(newTemplates);
       setPagination(newTemplates!.pagination);
-      setFirst(currentPage);
+     // setFirst(currentPage);
       setCurrentPage(currentPage);
       setTotalPages(newTemplates!.pagination.totalPages);
     });
@@ -528,7 +527,7 @@ const Templates: React.FC = () => {
   const paginatorTemplate = {
     layout:
       " FirstPageLink PrevPageLink CurrentPageReport  NextPageLink LastPageLink JumpToPageInput",
-    FirstPageLink: (options: any) => {
+    FirstPageLink: () => {
       return (
         <button
           type="button"
@@ -552,7 +551,7 @@ const Templates: React.FC = () => {
         </button>
       );
     },
-    CurrentPageReport: (options: any) => {
+    CurrentPageReport: () => {
       return (
         <span
           className="mx-3"
@@ -562,7 +561,7 @@ const Templates: React.FC = () => {
         </span>
       );
     },
-    JumpToPageInput: (options: any) => {
+    JumpToPageInput: () => {
       return (
         <div>
           <span className="mx-3" style={{ color: "black", userSelect: "none" }}>
@@ -587,7 +586,7 @@ const Templates: React.FC = () => {
         </div>
       );
     },
-    NextPageLink: (options: any) => {
+    NextPageLink: () => {
       return (
         <button
           type="button"
@@ -603,7 +602,7 @@ const Templates: React.FC = () => {
         </button>
       );
     },
-    LastPageLink: (options: any) => {
+    LastPageLink: () => {
       return (
         <button
           type="button"
