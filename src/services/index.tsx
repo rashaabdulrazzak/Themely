@@ -188,7 +188,8 @@ export const editTemplate = async (templateData: Template, imageFile: File | nul
   try {
     const formData = new FormData();
 
-    formData.append('name', templateData.name || '');
+    formData.append('nameEn', templateData.nameEn || '');
+    formData.append('nameAr', templateData.nameAr || '');
     formData.append('price', String(templateData.price || 0));
     formData.append('category', templateData.category || '');
     formData.append('userId', templateData.userId || '');
@@ -325,7 +326,8 @@ export const editTemplateWithFile = async (templateData: Template, imageFile: Fi
   try {
     const formData = new FormData();
 
-    formData.append('name', templateData.name || '');
+    formData.append('nameEn', templateData.nameEn || '');
+    formData.append('nameAr', templateData.nameAr || '');
     formData.append('price', String(templateData.price || 0));
     formData.append('category', templateData.category || '');
     formData.append('userId', templateData.userId || '');
@@ -380,7 +382,8 @@ export async function createTemplateWithFile(templateData: Template, imageFile: 
     console.log("add template...", templateData.id);
     
     const formData = new FormData();
-    formData.append('name', templateData.name);
+    formData.append('nameEn', templateData.nameEn);
+    formData.append('nameAr', templateData.nameAr || '');
     formData.append('price', templateData.price.toString());
     formData.append('category', templateData.category);
     formData.append('userId', templateData.userId);

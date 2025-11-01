@@ -16,18 +16,11 @@ import {
   getCategories,
   getTemplates,
 } from "../services";
-import type { Category, IPagination } from "../modules";
+import type {  IPagination, Template } from "../modules";
 import { Toast } from "primereact/toast";
 import { InputNumber } from "primereact/inputnumber";
 
-type Template = {
-  id: number;
-  name: string;
-  image: string; // URL
-  price: number;
-  category: Category;
-  userId: string;
-};
+
 // Create a helper function to handle image URLs
 const getImageUrl = (imagePath: string): string => {
   if (!imagePath) return "";
@@ -48,7 +41,7 @@ const getImageUrl = (imagePath: string): string => {
 const sampleTemplates: Template[] = [
   {
     id: 1,
-    name: "Startup Landing",
+    nameEn: "Startup Landing",
     image: "https://via.placeholder.com/80x50",
     price: 29,
     category: "MARRIAGE",
@@ -56,7 +49,7 @@ const sampleTemplates: Template[] = [
   },
   {
     id: 2,
-    name: "Portfolio Pro",
+    nameEn: "Portfolio Pro",
     image: "https://via.placeholder.com/80x50",
     price: 19,
     category: "GRADUATION",
@@ -64,7 +57,7 @@ const sampleTemplates: Template[] = [
   },
   {
     id: 3,
-    name: "Shop Lite",
+    nameEn: "Shop Lite",
     image: "https://via.placeholder.com/80x50",
     price: 39,
     category: "NATIONALDAY",
@@ -250,18 +243,6 @@ const Templates: React.FC = () => {
     }
   };
 
-  /*  const handleSave = async () => {
-     
-   
-
-    if (selectedTemplate) {
-       const updatedTemplate = await editTemplate(selectedTemplate);
-       console.log('updatedTemplate',updatedTemplate)
-      setTemplates(prev => prev.map(t => (t.id === selectedTemplate.id ? selectedTemplate : t)));
-    }
-    setEditDialog(false);
-    setSelectedTemplate(null);
-  }; */
 
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat(undefined, {
@@ -273,7 +254,7 @@ const Templates: React.FC = () => {
     return (
       <img
         src={getImageUrl(template.image)}
-        alt={template.name ?? template.image}
+        alt={template.nameEn ?? template.image}
         style={{
           width: 250,
           height: 150,
@@ -447,7 +428,7 @@ const Templates: React.FC = () => {
       toast.current?.show({
         severity: "success",
         summary: "Successful",
-        detail: `Template "${templateToDelete.name}" deleted successfully`,
+        detail: `Template "${templateToDelete.nameEn}" deleted successfully`,
         life: 3000,
       });
     } catch (error) {
@@ -475,7 +456,8 @@ const Templates: React.FC = () => {
 
     setNewTemplate({
       id: 0, // Or let your backend assign automatically
-      name: "",
+      nameEn: "",
+      nameAr: "",
       image: "",
       price: 0,
       category: "OTHER",
@@ -695,8 +677,15 @@ const Templates: React.FC = () => {
             />
 
             <Column
-              field="name"
-              header="Name"
+              field="nameEn"
+              header="Name EN"
+              sortable
+              filter
+              filterPlaceholder="Search name"
+            />
+            <Column
+              field="nameAr"
+              header="Name AR"
               sortable
               filter
               filterPlaceholder="Search name"
@@ -756,67 +745,6 @@ const Templates: React.FC = () => {
           </DataTable>
         </div>
 
-        {/* Edit Modal */}
-        {/*      <Dialog
-      header="Edit Template"
-      visible={editDialog}
-      style={{ width: '480px' }}
-      modal
-      onHide={() => setEditDialog(false)}
-      className="rounded-xl"
-    >
-      {selectedTemplate && (
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <label>Name</label>
-            <InputText
-              value={selectedTemplate.name}
-              onChange={(e) => setSelectedTemplate({ ...selectedTemplate, name: e.target.value })}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label>Image URL</label>
-            <InputText
-              value={selectedTemplate.image}
-              onChange={(e) => setSelectedTemplate({ ...selectedTemplate, image: e.target.value })}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label>Price (USD)</label>
-            <InputText
-              value={String(selectedTemplate.price ?? '')}
-              onChange={(e) => {
-                const val = Number(e.target.value.replace(/[^\d.]/g, ''));
-                setSelectedTemplate({ ...selectedTemplate, price: isNaN(val) ? 0 : val });
-              }}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label>Category</label>
-            <InputText
-              value={selectedTemplate.category}
-              onChange={(e) => setSelectedTemplate({ ...selectedTemplate, category: e.target.value })}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label>userId</label>
-            <InputText
-              value={selectedTemplate.userId}
-              onChange={(e) => setSelectedTemplate({ ...selectedTemplate, userId: e.target.value })}
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 mt-4">
-            <Button label="Cancel" icon="pi pi-times" className="p-button-sm" onClick={() => setEditDialog(false)} />
-            <Button label="Save" icon="pi pi-check" className="p-button-sm p-button-success" onClick={handleSave} />
-          </div>
-        </div>
-      )}
-    </Dialog> */}
         <Dialog
           header="Edit Template"
           visible={editDialog}
@@ -849,13 +777,26 @@ const Templates: React.FC = () => {
               )}
 
               <div className="flex flex-col gap-1">
-                <label className="font-medium">Name</label>
+                <label className="font-medium">Name EN</label>
                 <InputText
-                  value={selectedTemplate.name}
+                  value={selectedTemplate.nameEn}
                   onChange={(e) =>
                     setSelectedTemplate({
                       ...selectedTemplate,
-                      name: e.target.value,
+                      nameEn: e.target.value,
+                    })
+                  }
+                  disabled={uploadLoading}
+                />
+              </div>
+               <div className="flex flex-col gap-1">
+                <label className="font-medium">Name AR</label>
+                <InputText
+                  value={selectedTemplate.nameAr}
+                  onChange={(e) =>
+                    setSelectedTemplate({
+                      ...selectedTemplate,
+                      nameAr: e.target.value,
                     })
                   }
                   disabled={uploadLoading}
@@ -1059,7 +1000,7 @@ const Templates: React.FC = () => {
             />
             {templateToDelete && (
               <span>
-                Are you sure you want to delete <b>"{templateToDelete.name}"</b>
+                Are you sure you want to delete <b>"{templateToDelete.nameEn}"</b>
                 ?
               </span>
             )}
@@ -1097,11 +1038,21 @@ const Templates: React.FC = () => {
               )}
               {/* Name */}
               <div className="flex flex-col gap-1">
-                <label className="font-medium">Name</label>
+                <label className="font-medium">Name EN</label>
                 <InputText
-                  value={newTemplate.name}
+                  value={newTemplate.nameEn}
                   onChange={(e) =>
-                    setNewTemplate({ ...newTemplate, name: e.target.value })
+                    setNewTemplate({ ...newTemplate, nameEn: e.target.value })
+                  }
+                  disabled={addUploadLoading}
+                />
+              </div>
+                <div className="flex flex-col gap-1">
+                <label className="font-medium">Name AR</label>
+                <InputText
+                  value={newTemplate.nameAr}
+                  onChange={(e) =>
+                    setNewTemplate({ ...newTemplate, nameAr: e.target.value })
                   }
                   disabled={addUploadLoading}
                 />
@@ -1240,7 +1191,7 @@ const Templates: React.FC = () => {
                       toast.current?.show({
                         severity: "success",
                         summary: "Successful",
-                        detail: `Template "${result.name}" added successfully`,
+                        detail: `Template "${result.nameEn}" added successfully`,
                         life: 3000,
                       });
                     } catch (error) {

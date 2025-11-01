@@ -31,12 +31,12 @@ export type Category =
 } */
 export type Template = {
   id: number;
-  name: string;
-  image: string;   // URL
+  nameEn: string;
+  nameAr?: string;
+  image: string; // URL
   price: number;
   category: Category;
   userId: string;
-
 };
 export interface IPagination {
     totalItems: number;
@@ -126,3 +126,4 @@ export type DialogState =
   | { type: 'deleteSingle'; data: Template | null }
   | { type: 'deleteBulk'; data: Template[] }
   | { type: null; data?: null };
+
