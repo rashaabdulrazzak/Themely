@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -7,13 +7,15 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { Tag } from "primereact/tag";
-import { getUsers, deleteUser, updateUser } from "../services";
-import type { User } from "../modules";
+import { getUsers, deleteUser, updateUser, createUser } from "../services";
+import type { IPagination, User } from "../modules";
+import { InputNumber } from "primereact/inputnumber";
+import  { Toast } from "primereact/toast";
 
 const roleOptions = [
   { label: "Admin", value: "ADMIN" },
   { label: "User", value: "USER" },
-  { label: "Template Creator", value: "TemplateCreator" },
+  { label: "DESIGNER", value: "DESIGNER" },
 ];
 
 const statusOptions = [
@@ -42,7 +44,7 @@ const defaultUsers: User[] = [
     id: 3,
     username: "Charlie Brown",
     email: "charlie@example.com",
-    role: "TEMPLATECREATOR",
+    role: "DESIGNER",
     status: "INACTIVE",
     created: "2024-01-03",
   },
@@ -53,7 +55,16 @@ const Users: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editDialog, setEditDialog] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
-
+  const [isCreating, setIsCreating] = useState(false);
+const basePage = 1;
+  const [pagination, setPagination] = useState<IPagination>();
+  const [pageNo, setPageNo] = useState<number>(pagination?.page || 0);
+  const [currentPage, setCurrentPage] = useState<number>(pagination?.page || 1);
+  const [totalPages, setTotalPages] = useState<number>(
+    pagination?.totalPages || 1
+  );
+   const toast = useRef<Toast>(null);
+    const [totalRecords, setTotalRecords] = useState(0);
   // ---- helpers
   const getStatusSeverity = (status: string) => {
     switch (status) {
@@ -74,13 +85,15 @@ const Users: React.FC = () => {
         return "warning";
       case "USER":
         return "info";
+        case "DESIGNER":
+        return "success";
       default:
         return undefined;
     }
   };
 
   const statusBodyTemplate = (rowData: User) => (
-    <Tag value={rowData.status} severity={getStatusSeverity(rowData.status)} />
+    <Tag value={rowData.status} className = "edit-btn" severity={getStatusSeverity(rowData.status)} />
   );
 
   const roleBodyTemplate = (rowData: User) => (
@@ -104,15 +117,35 @@ const Users: React.FC = () => {
     </div>
   );
 
+const openCreateDialog = () => {
+      setIsCreating(true);
+  setSelected({
+      username: "username",
+      email: "write the email",
+      password: "tes1",
+      role: "USER",
+      status: "ACTIVE",
+        id: "",
+        created: "",
+
+    });
+
+  setEditDialog(true);
+    
+};
+
+
   const openEditDialog = (u: User) => {
+    console.log("Opening edit dialog for user:", u);
+    setIsCreating(false);
     setSelected({ ...u });
     setEditDialog(true);
   };
 
+
+
   const handleDelete = async (u: User) => {
-    if (
-      window.confirm(`Are you sure you want to delete user "${u.username}"?`)
-    ) {
+    if (window.confirm(`Are you sure you want to delete user "${u.username}"?`)) {
       try {
         const deletedUser = await deleteUser(u.id.toString());
         console.log("Deleted user...", deletedUser);
@@ -125,230 +158,346 @@ const Users: React.FC = () => {
   };
 
   const handleSave = async () => {
+    console.log("Saving user...", selected);
+    if (!selected) return;
     if (selected) {
-      try {
+   try {
+      if (isCreating) {
+        // Creating new user
+        const response = await createUser(selected);
+        const newUser: User = {
+          id: response.id,
+          username: selected.username,
+          email: selected.email,
+          role: selected.role,
+          status: selected.status,
+          created: new Date().toISOString().slice(0, 10),
+        };
+        setRows([...rows, newUser]);
+        toast.current?.show({
+          severity: "success",
+          summary: "Successful",
+          detail: `User "${selected.username}" created successfully`,
+          life: 3000,
+        });
+      } else {
+        // Updating existing user
         const response = await updateUser(selected);
-
-        const normalizedUser = normalize(response);
-
-        setRows(
-          rows.map((u) => (u.id === normalizedUser.id ? normalizedUser : u))
-        );
-
-        console.log("User updated successfully:", response);
-      } catch (error) {
-        console.error("Failed to save user:", error);
+      
+        setRows(rows.map((u) => (u.id === selected.id ? { ...response } as User : u)));
+           // Show success toast
+        toast.current?.show({
+          severity: "success",
+          summary: "Successful",
+          detail: `User "${selected.username}" updated successfully`,
+          life: 3000,
+        });
       }
-    }
+      hideDialog();
+    } catch (error) {
+      console.error("Failed to save user:", error);
+      alert("Failed to save user. Please try again.");
+      toast.current?.show({
+          severity: "error",
+          summary: "error",
+          detail: `User "${selected.username}" Failed to save user. Please try again.`,
+          life: 3000,
+        });
+    }}
     hideDialog();
   };
 
-  const extractItems = (res: any): any[] => {
-    const payload = res?.data ?? res;
-    if (Array.isArray(payload)) return payload;
-    if (Array.isArray(payload?.data)) return payload.data;
-    if (Array.isArray(payload?.items)) return payload.items;
-    if (Array.isArray(payload?.results)) return payload.results;
-    if (Array.isArray(payload?.data?.data)) return payload.data.data;
-    if (Array.isArray(payload?.data?.items)) return payload.data.items;
-    return [];
-  };
 
-  // Map server fields -> table fields
-  const normalize = (r: any): User => ({
-    id: r.id ?? r._id ?? r.uuid ?? r.key,
-    username: r.username ?? r.name ?? r.userName ?? "",
-    email: r.email ?? "",
-    role: r.role ?? "USER",
-    status: r.status ?? "ACTIVE",
-    created: r.createdAt
-      ? new Date(r.createdAt).toISOString().slice(0, 10)
-      : r.created
-      ? new Date(r.created).toISOString().slice(0, 10)
-      : "",
-  });
-
-  useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-
-    getUsers()
-      .then((res: any) => {
-        const items = extractItems(res);
-        if (items.length) {
-          const mapped = items.map(normalize);
-          if (mounted) setRows(mapped);
-        } else {
-          if (mounted) setRows(defaultUsers);
-        }
-      })
-      .catch((err: any) => {
-        console.error("Error fetching users:", err);
-        if (mounted) setRows(defaultUsers);
-      })
-      .finally(() => mounted && setLoading(false));
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  function hideDialog(): void {
+const hideDialog = () => {
     setEditDialog(false);
     setSelected(null);
-  }
+    setIsCreating(false);
+  };
+
+ useEffect(() => {
+    // Fetch templates from API (expects an array of Template)
+
+    getUsers(basePage)
+      .then((res: any) => {
+        // Accept either res.data or res
+        console.log("Fetched templates:", res.pagination);
+        const data = Array.isArray(res) ? res : res?.data;
+        if (Array.isArray(data) && data.length) {
+          console.log("Fetched templates:", res.data || res);
+          setRows(data);
+          setTotalRecords(res.pagination.total_items || data.length);
+          setPagination(res.pagination);
+          setCurrentPage(res.pagination.page);
+          setTotalPages(res.pagination.totalPages);
+        } else {
+          // Use sample data if API returns empty or invalid data
+          setRows(defaultUsers);
+        }
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        console.error("Error fetching templates:", err);
+        // Use sample templates on error as a graceful fallback
+         setRows(defaultUsers);
+        setLoading(false);
+      });
+  }, []); 
+   const onPageInputChange = (event: any) => {
+     const current = event.value;
+     setPageNo(current);
+   };
+   const onPageChange = (text: string) => {
+     let currentPage = 1;
+     console.log("onPageChange called with:", text);
+     console.log("Current pagination state:", pagination!.page);
+     switch (text) {
+       case "next":
+         currentPage = pagination!.page + 1;
+         break;
+       case "prev":
+         currentPage = pagination!.page - 1;
+         break;
+       case "first":
+         currentPage = 1;
+         break;
+       case "last":
+         currentPage = pagination!.totalPages;
+ 
+         break;
+ 
+       default:
+         currentPage = parseInt(text, 10);
+         break;
+       // Default case
+     }
+     getUsers(currentPage).then((newTemplates) => {
+       setRows(newTemplates);
+       setPagination(newTemplates!.pagination);
+      // setFirst(currentPage);
+       setCurrentPage(currentPage);
+       setTotalPages(newTemplates!.pagination.totalPages);
+     });
+   };
+   const paginatorTemplate = {
+     layout:
+       " FirstPageLink PrevPageLink CurrentPageReport  NextPageLink LastPageLink JumpToPageInput",
+     FirstPageLink: () => {
+       return (
+         <button
+           type="button"
+           // className={currentPage > 1 ? "" : options.className}
+           onClick={() => onPageChange("first")}
+           disabled={currentPage <= 1}
+         >
+           <span className="p-3">First</span>
+         </button>
+       );
+     },
+     PrevPageLink: (options: any) => {
+       return (
+         <button
+           type="button"
+           className={currentPage > 1 ? "" : options.className}
+           onClick={() => onPageChange("prev")}
+           disabled={currentPage > 1 ? false : true}
+         >
+           <span className="p-3"> Previous</span>
+         </button>
+       );
+     },
+     CurrentPageReport: () => {
+       return (
+         <span
+           className="mx-3"
+           style={{ color: "var(--text-color)", userSelect: "none" }}
+         >
+           ({currentPage} / {totalPages})
+         </span>
+       );
+     },
+     JumpToPageInput: () => {
+       return (
+         <div>
+           <span className="mx-3" style={{ color: "black", userSelect: "none" }}>
+             Go to page
+             <InputNumber
+               className="ml-1"
+               min={1}
+               max={totalPages}
+               value={currentPage}
+               onValueChange={onPageInputChange}
+               disabled={totalPages === 0 || currentPage === totalPages}
+             />
+           </span>
+           <Button
+             id="search-button"
+             severity="danger"
+             className="ml-2 add-btn"
+             onClick={() => onPageChange(pageNo.toString())}
+             label="Go"
+             disabled={totalPages === 0 || currentPage === totalPages}
+           />
+         </div>
+       );
+     },
+     NextPageLink: () => {
+       return (
+         <button
+           type="button"
+           /*   className={
+             currentPage < totalPages
+               ? options.className
+               : ""
+           } */
+           onClick={() => onPageChange("next")}
+           disabled={currentPage < totalPages ? false : true}
+         >
+           <span className="p-3">Next</span>
+         </button>
+       );
+     },
+     LastPageLink: () => {
+       return (
+         <button
+           type="button"
+           /* className={
+             currentPage < totalPages
+               ? options.className
+               : ""
+           } */
+           onClick={() => onPageChange("last")}
+           disabled={currentPage < totalPages ? false : true}
+         >
+           <span className="p-3">Last</span>
+         </button>
+       );
+     },
+   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-2xl font-bold mb-4">Users List</h2>
+     <>
+     <Toast ref={toast} />
+     <div className="p-6 min-h-screen">
+          <div className="bg-white rounded-xl shadow-md p-6">
+              <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">Users List</h2>
 
-        <DataTable
-          value={rows}
-          dataKey="id"
-          loading={loading}
-          rowHover
-          stripedRows
-          responsiveLayout="scroll"
-          paginator
-          rows={10}
-          emptyMessage={loading ? "Loading…" : "No users found"}
-          className="p-datatable-hoverable"
-        >
-          <Column field="id" header="ID" sortable />
-          <Column
-            field="username"
-            header="Username"
-            sortable
-            filter
-            filterPlaceholder="Search by username"
-          />
-          <Column
-            field="email"
-            header="Email"
-            sortable
-            filter
-            filterPlaceholder="Search by email"
-          />
-          <Column field="role" header="Role" body={roleBodyTemplate} sortable />
-          <Column
-            field="status"
-            header="Status"
-            body={statusBodyTemplate}
-            sortable
-          />
-          <Column
-            field="created"
-            header="Created"
-            sortable
-            filter
-            filterPlaceholder="Search by date"
-          />
-          <Column header="Actions" body={actionBodyTemplate} />
-        </DataTable>
-      </div>
-
-      <Dialog
-        header={selected && selected.id ? "Edit User" : "Add User"}
-        visible={editDialog}
-        style={{ width: "600px" }}
-        modal
-        onHide={() => setEditDialog(false)}
-        className="rounded-xl"
-      >
-        {selected && (
-          <div className="flex flex-col gap-4">
-            {/* ID (Read-only, only visible when editing) */}
-            {selected.id && (
-              <div className="flex flex-col gap-1">
-                <label>ID</label>
-                <InputText
-                  value={String(selected.id)}
-                  readOnly
-                  disabled
-                  className="p-disabled"
-                />
+                  <Button
+                      label="Create User"
+                      icon="pi pi-user-plus"
+                      className="add-btn"
+                      onClick={openCreateDialog} />
               </div>
-            )}
 
-            {/* Username (Editable) */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="username">Username</label>
-              <InputText
-                id="username"
-                value={selected.username}
-                onChange={(e) =>
-                  setSelected({ ...selected, username: e.target.value })
-                }
-              />
-            </div>
-
-            {/* Email (Read-only) */}
-            <div className="flex flex-col gap-1">
-              <label>Email</label>
-              <InputText
-                value={selected.email}
-                readOnly
-                disabled
-                className="p-disabled"
-              />
-            </div>
-
-            {/* Role (Editable) */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="role">Role</label>
-              <Dropdown
-                id="role"
-                value={selected.role}
-                options={roleOptions}
-                onChange={(e) => setSelected({ ...selected, role: e.value })}
-                placeholder="Select a Role"
-              />
-            </div>
-
-            {/* Status (Editable) */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="status">Status</label>
-              <Dropdown
-                id="status"
-                value={selected.status}
-                options={statusOptions}
-                onChange={(e) => setSelected({ ...selected, status: e.value })}
-                placeholder="Select a Status"
-              />
-            </div>
-
-            {/* Created Date (Read-only, only visible when editing) */}
-            {selected.created && (
-              <div className="flex flex-col gap-1">
-                <label>Created Date</label>
-                <InputText
-                  value={selected.created}
-                  readOnly
-                  disabled
-                  className="p-disabled"
-                />
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2 mt-4">
-              <Button
-                label="Cancel"
-                icon="pi pi-times"
-                className="p-button-sm p-button-text"
-                onClick={hideDialog}
-              />
-              <Button
-                label="Save"
-                icon="pi pi-check"
-                className="p-button-sm p-button-success"
-                onClick={handleSave}
-              />
-            </div>
+              <DataTable
+                  value={rows}
+                  dataKey="id"
+                  loading={loading}
+                  rowHover
+                  stripedRows
+                  responsiveLayout="scroll"
+                  totalRecords={totalRecords}
+                  paginator
+                  rows={10}
+                  emptyMessage={loading ? "Loading…" : "No users found"}
+                  className="p-datatable-hoverable"
+                  paginatorTemplate={paginatorTemplate}
+              >
+                  <Column field="id" header="ID" sortable />
+                  <Column field="username" header="Username" sortable filter filterPlaceholder="Search by username" />
+                  <Column field="email" header="Email" sortable filter filterPlaceholder="Search by email" />
+                  <Column field="role" header="Role" body={roleBodyTemplate} sortable />
+                  <Column field="status" header="Status" body={statusBodyTemplate} sortable />
+                  <Column field="created" header="Created" sortable filter filterPlaceholder="Search by date" />
+                  <Column header="Actions" body={actionBodyTemplate} />
+              </DataTable>
           </div>
-        )}
-      </Dialog>
-    </div>
+          <Dialog
+              header={selected && selected.id ? "Edit User" : "Create Admin"}
+              visible={editDialog}
+              style={{ width: "600px" }}
+              modal
+              onHide={hideDialog}
+              className="rounded-xl"
+          >
+              {selected && (
+                  <div className="flex flex-col gap-4">
+                      {selected.id && (
+                          <div className="flex flex-col gap-1">
+                              <label>ID</label>
+                              <InputText value={String(selected.id)} readOnly disabled className="p-disabled" />
+                          </div>
+                      )}
+
+                      <div className="flex flex-col gap-1">
+                          <label htmlFor="username">Username</label>
+                          <InputText
+                              id="username"
+                              value={selected?.username || ""} // ✅ Use selected.username directly
+                              onChange={(e) => setSelected({ ...selected, username: e.target.value })}
+                              required />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                          <label>Email</label>
+                          <InputText
+                              id="email"
+                              value={selected?.email || ""} // ✅ Use selected.email directly
+                              onChange={(e) => setSelected({ ...selected, email: e.target.value })}
+                              readOnly={!!selected.id} // read-only if editing
+                              disabled={!!selected.id}
+                              className={selected.id ? "p-disabled" : ""}
+                              required />
+                      </div>
+
+                      {/* Show password only when creating new user */}
+                      {!selected.id && (
+                          <div className="flex flex-col gap-1">
+                              <label htmlFor="password">Password</label>
+                              <InputText
+                                  id="password"
+                                  type="password"
+                                  value={selected?.password || ""} // ✅ Use selected.password directly
+                                  onChange={(e) => setSelected({ ...selected, password: e.target.value })}
+                                  required />
+                          </div>
+                      )}
+
+                      <div className="flex flex-col gap-1">
+                          <label htmlFor="role">Role</label>
+                          <Dropdown
+                              id="role"
+                              value={selected.role}
+                              options={roleOptions}
+                              onChange={(e) => setSelected({ ...selected, role: e.value })}
+                              placeholder="Role" />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                          <label htmlFor="status">Status</label>
+                          <Dropdown
+                              id="status"
+                              value={selected.status}
+                              options={statusOptions}
+                              onChange={(e) => setSelected({ ...selected, status: e.value })}
+                              placeholder="Select a Status" />
+                      </div>
+
+                      {selected.created && (
+                          <div className="flex flex-col gap-1">
+                              <label>Created Date</label>
+                              <InputText value={selected.created} readOnly disabled className="p-disabled" />
+                          </div>
+                      )}
+
+                      <div className="flex justify-end gap-2 mt-4">
+                          <Button label="Cancel" icon="pi pi-times" className="p-button-sm p-button-text" onClick={hideDialog} />
+                          <Button label="Save" icon="pi pi-check" className="p-button-sm p-button-success" onClick={handleSave} />
+                      </div>
+                  </div>
+              )}
+          </Dialog>
+      </div></>
   );
 };
 

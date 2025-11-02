@@ -385,7 +385,7 @@ const confirmDeleteCanvas = (canvas: Canvas) => {
       },
     };
     return (
-         <><div className="p-6 bg-gray-100 min-h-screen">
+         <><div className="p-6 min-h-screen">
             <div className="bg-white rounded-xl shadow-md p-6 mb-6 flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Canvases</h2>
                 {(userRole === 'ADMIN' || userRole === 'TEMPLATECREATOR') && (

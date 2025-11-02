@@ -47,12 +47,12 @@ export const navbarConfig: NavbarMenuItem[] = [
 ];
 
 export const navbarConfigLower: NavbarMenuItem[] = [
-  {
+/*   {
     label: 'Settings',
     icon: 'pi pi-cog',
     url: '/settings',
     roles: [ 'ADMIN', ]
-  },
+  }, */
   {
     label: 'Performance',
     icon: 'pi pi-chart-bar',

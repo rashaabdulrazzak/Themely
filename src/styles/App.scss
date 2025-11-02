@@ -173,3 +173,27 @@ color: black;
     color: #495057;
     background: #e3f2fd;
 }
+.p-tag.p-tag-danger {
+    background-color: rgb(207 112 112 / 15%);
+    border: 1px solid #d32f2f;
+    color: #d32f2f;
+    width: 100%;
+}
+.p-tag.p-tag-info {
+    background-color: rgb(136 185 225 / 12%);
+    border: 1px solid #2196f3;
+    color:#2196f3;
+     width: 100%;
+}
+.p-tag.p-tag-warning {
+    background-color: rgb(251 192 45 / 8%);
+    color: #fbc02d;
+    border: 1px solid #fbc02d;
+     width: 100%;
+}
+.p-tag.p-tag-success {
+    background-color: rgb(104 159 56 / 9%);
+    border: 1px solid #689f38;
+    color: #689f38;
+    width: 100%;
+}

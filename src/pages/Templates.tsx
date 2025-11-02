@@ -194,7 +194,6 @@ const Templates: React.FC = () => {
           imageFile: imageFile,
         });
 
-        // ✅ response IS the template object directly
         const updatedTemplate = await editTemplateWithFile(
           selectedTemplate,
           imageFile
@@ -346,7 +345,7 @@ const Templates: React.FC = () => {
         setTemplates(sampleTemplates);
         setLoading(false);
       });
-  }, []); // Empty dependency array to run only once
+  }, []); 
   // Function to open confirmation dialog
   const confirmDeleteSelected = () => {
     if (selectedTemplates.length === 0) {
@@ -468,7 +467,6 @@ const Templates: React.FC = () => {
     setAddImagePreview(null);
     setAddImageError(null);
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onPageInputChange = (event: any) => {
     const current = event.value;
     setPageNo(current);
@@ -605,7 +603,7 @@ const Templates: React.FC = () => {
   return (
     <>
       <Toast ref={toast} />
-      <div className="p-6 bg-gray-100 min-h-screen">
+      <div className="p-6 min-h-screen">
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="bg-white rounded-xl shadow-md p-6 mb-6 flex justify-between items-center">
             <h2 className="text-2xl font-bold">Templates</h2>

@@ -476,11 +476,16 @@ export const deleteReview = async (id:string) => {
 };
 
 // user
-export const getUsers = async () => {
+export const getUsers = async (page: number = 1) => {
   try {
     console.log("Fetching users...");
-    const response = await api.get('/user');
-
+    const response = await api.get('/user',{
+      params: {
+        page,
+        limit: 10   
+      }
+    });
+ console.log("User Fetching users...");
     return handleResponse(response);
   } catch (error) {
     handleError(error);
@@ -502,15 +507,27 @@ export const deleteUser = async (id:string) => {
  export const updateUser = async (data:User) => {
   try {
     console.log("post user...",data);
-    const response = await api.patch(`/user/${data.id}`,data);
+    const response = await api.put(`/user/${data.id}`,data);
     console.log("post user...",response);
 
-    return handleResponse(response);
+    return handleResponse(response,'POST');
   } catch (error) {
     handleError(error);
     throw error;
   }
 }; 
+export const createUser = async (data:User) => {
+  try {
+    console.log("create user...",data);
+    const response = await api.post('/user',data);
+    console.log("create canvas...",response);
+
+    return handleResponse(response);
+  } catch (error) {
+    handleError(error);
+    throw error;
+  } 
+};
 export async function getAnalytics() {
   //const token = localStorage.getItem("token"); // your stored JWT token
    console.log("Fetching analatics...");

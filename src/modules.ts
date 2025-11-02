@@ -88,6 +88,7 @@ export type  User = {
     created: string;   // derived from createdAt (yyyy-mm-dd)
      createdAt?: string;
      Avatar?: string;
+     password?: string;
 };
 
 
