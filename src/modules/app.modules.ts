@@ -27,23 +27,7 @@ export interface IPagination {
   has_more: boolean;
 }
 
-export class FilterDTO {
-  minPrice?: number = 0;
-  maxPrice?: number = 0;
-  available: number = 0;
-  publishedOnStore: number = 0;
-}
 
-export interface CartItem {
-  id: string | any;
-  sub_product_id: number;
-  product_title: string;
-  product_id: number;
-  image: string;
-  quantity: number;
-  price: number;
-  created_at: Date;
-}
 export interface EmptyData {
   [key: string]: PropertyEmptyData;
 }

@@ -6,7 +6,7 @@ import { Message } from "primereact/message"; // Add this for error display
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useState } from 'react'; // Add this for error state
-import log from '../assets/log.png'
+import theme from '../assets/themely.webp'
 import { LoginDTO } from "../modules"
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -130,7 +130,7 @@ const Login = () => {
       </form>
 
       <div className="shopping-cart-container">
-        <img src={log} alt="Login illustration" />
+        <img src={theme} alt="Themely" />
       </div>
     </div>
   );
