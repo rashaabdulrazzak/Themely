@@ -16,11 +16,10 @@ import {
   getCategories,
   getTemplates,
 } from "../services";
-import type {  IPagination, Template } from "../modules";
+import type { IPagination, Template } from "../modules";
 import { Toast } from "primereact/toast";
 import { InputNumber } from "primereact/inputnumber";
-
-
+import { FileUpload } from "primereact/fileupload";
 // Create a helper function to handle image URLs
 const getImageUrl = (imagePath: string): string => {
   if (!imagePath) return "";
@@ -31,13 +30,14 @@ const getImageUrl = (imagePath: string): string => {
   }
 
   // If it's a relative path, prepend your SERVER base URL (port 5001)
-  const SERVER_BASE_URL = "http://localhost:5001";
+  const SERVER_BASE_URL = "https://server.thimly.com/uploads/";
 
   // Handle both "/uploads/..." and "uploads/..." paths
   const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
 
   return `${SERVER_BASE_URL}${cleanPath}`;
 };
+
 const sampleTemplates: Template[] = [
   {
     id: 1,
@@ -75,10 +75,12 @@ const Templates: React.FC = () => {
   const [page, setPage] = useState(1); // current page
   const [limit, setLimit] = useState(10); // items per page
   const [totalRecords, setTotalRecords] = useState(0);
+  const [first, setFirst] = useState(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+
   const [selectedTemplates, setSelectedTemplates] = useState<Template[]>([]);
   const [deleteProductsDialog, setDeleteProductsDialog] =
     useState<boolean>(false);
@@ -94,6 +96,8 @@ const Templates: React.FC = () => {
   const [addUploadLoading, setAddUploadLoading] = useState(false);
   const [addImageError, setAddImageError] = useState<string | null>(null);
   const user = localStorage.getItem("user");
+  const addFileUploadRef = useRef<FileUpload | null>(null);
+
 
   console.log("Current user from localStorage:", user);
   console.log("Parsing user...", user ? JSON.parse(user) : null);
@@ -215,7 +219,7 @@ const Templates: React.FC = () => {
         toast.current?.show({
           severity: "success",
           summary: "Successful",
-          detail: `Template "${updatedTemplate.name}" updated successfully`,
+          detail: `Template "${updatedTemplate?.nameEn || ''} " updated successfully`,
           life: 3000,
         });
       } catch (error) {
@@ -241,7 +245,6 @@ const Templates: React.FC = () => {
       });
     }
   };
-
 
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat(undefined, {
@@ -321,7 +324,6 @@ const Templates: React.FC = () => {
     // Fetch templates from API (expects an array of Template)
 
     getTemplates(basePage)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((res: any) => {
         // Accept either res.data or res
         console.log("Fetched templates:", res.pagination);
@@ -345,7 +347,7 @@ const Templates: React.FC = () => {
         setTemplates(sampleTemplates);
         setLoading(false);
       });
-  }, []); 
+  }, []);
   // Function to open confirmation dialog
   const confirmDeleteSelected = () => {
     if (selectedTemplates.length === 0) {
@@ -496,14 +498,15 @@ const Templates: React.FC = () => {
       // Default case
     }
     getTemplates(currentPage).then((newTemplates) => {
+      console.log("newTemplates", newTemplates);
       setTemplates(newTemplates);
       setPagination(newTemplates!.pagination);
-     // setFirst(currentPage);
       setCurrentPage(currentPage);
       setTotalPages(newTemplates!.pagination.totalPages);
     });
     setPage(currentPage);
   };
+  console.log("templates", templates);
   const paginatorTemplate = {
     layout:
       " FirstPageLink PrevPageLink CurrentPageReport  NextPageLink LastPageLink JumpToPageInput",
@@ -604,9 +607,9 @@ const Templates: React.FC = () => {
     <>
       <Toast ref={toast} />
       <div className="p-6 min-h-screen">
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="bg-white rounded-xl shadow-md p-6 mb-6 flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Templates</h2>
+        <div className="bg-white rounded-xl shadow-md p-6 ">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <h2 className="text-sm md:text-2xl font-bold">Templates</h2>
             {(userRole === "ADMIN" || userRole === "TEMPLATECREATOR") && (
               <div className="flex gap-2">
                 <Button
@@ -631,16 +634,16 @@ const Templates: React.FC = () => {
           <DataTable
             value={templates}
             className="p-datatable-hoverable"
-            responsiveLayout="scroll"
+            loading={loading}
+            emptyMessage={loading ? "Loading…" : "No Patients found"}
             rowHover
             stripedRows
             paginator
             rows={10}
-            first={(page - 1) * limit}
+            first={first}
             dataKey="id"
             removableSort
             filterDisplay="row"
-            loading={loading}
             totalRecords={totalRecords}
             selection={selectedTemplates}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -654,11 +657,12 @@ const Templates: React.FC = () => {
                 setSelectedTemplates([]);
               }
             }}
-            selectionMode="checkbox" // Add this line - required when using selection with checkboxes
+            selectionMode="checkbox"
             onPage={(e) => {
               const newPage = Math.floor(e.first / e.rows) + 1;
               setPage(newPage);
               setLimit(e.rows);
+              setFirst(e.first);
             }}
             paginatorTemplate={paginatorTemplate}
           >
@@ -787,7 +791,7 @@ const Templates: React.FC = () => {
                   disabled={uploadLoading}
                 />
               </div>
-               <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1">
                 <label className="font-medium">Name AR</label>
                 <InputText
                   value={selectedTemplate.nameAr}
@@ -831,12 +835,59 @@ const Templates: React.FC = () => {
                 )}
 
                 {/* File input */}
-                <input
+                {/*  <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
                   disabled={uploadLoading}
-                  className="text-sm"
+                  className="text-sm  "
+                /> */}
+                <FileUpload
+                  ref={addFileUploadRef}
+                  mode="basic"
+                  name="templateImage"
+                  chooseLabel="Choose Image"
+                  accept="image/*"
+                  maxFileSize={MAX_FILE_SIZE}
+                  customUpload 
+                  auto={false}
+                  onSelect={(e: any) => {
+                    const file = e.files?.[0] as File | undefined;
+                    setImageError(null);
+
+                    if (!file) {
+                      setImageFile(null);
+                      setImagePreview(null);
+                      return;
+                    }
+
+                    if (!ALLOWED_TYPES.includes(file.type)) {
+                      setImageError(
+                        "Please select a valid image file (JPEG, PNG, WebP, or GIF)"
+                      );
+                       addFileUploadRef.current?.clear();
+                      return;
+                    }
+
+                    if (file.size > MAX_FILE_SIZE) {
+                      setImageError(
+                        `File size must be less than ${
+                          MAX_FILE_SIZE / (1024 * 1024)
+                        }MB`
+                      );
+                       addFileUploadRef.current?.clear();
+                      return;
+                    }
+
+                    setImageFile(file);
+
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      setImagePreview(ev.target?.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                  disabled={uploadLoading}
                 />
 
                 {imageError && (
@@ -998,8 +1049,8 @@ const Templates: React.FC = () => {
             />
             {templateToDelete && (
               <span>
-                Are you sure you want to delete <b>"{templateToDelete.nameEn}"</b>
-                ?
+                Are you sure you want to delete{" "}
+                <b>"{templateToDelete.nameEn}"</b>?
               </span>
             )}
           </div>
@@ -1045,7 +1096,7 @@ const Templates: React.FC = () => {
                   disabled={addUploadLoading}
                 />
               </div>
-                <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1">
                 <label className="font-medium">Name AR</label>
                 <InputText
                   value={newTemplate.nameAr}
@@ -1070,7 +1121,7 @@ const Templates: React.FC = () => {
                     </p>
                   </div>
                 )}
-                <input
+               {/*  <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => {
@@ -1103,7 +1154,57 @@ const Templates: React.FC = () => {
                   }}
                   disabled={addUploadLoading}
                   className="text-sm"
-                />
+                /> */}
+               <FileUpload
+  ref={addFileUploadRef}
+  mode="basic"
+  name="addTemplateImage"
+  chooseLabel="Choose Image"
+  accept="image/*"
+  customUpload
+  auto={false}
+  maxFileSize={MAX_FILE_SIZE}
+  disabled={addUploadLoading}
+  className="text-sm"
+  onSelect={(e: any) => {
+    const file = e.files?.[0] as File | undefined;
+    setAddImageError(null);
+
+    if (!file) {
+      setAddImageFile(null);
+      setAddImagePreview(null);
+      return;
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setAddImageError(
+        "Please select a valid image file (JPEG, PNG, WebP, or GIF)"
+      );
+      
+      addFileUploadRef.current?.clear();
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setAddImageError(
+        `File size must be less than ${
+          MAX_FILE_SIZE / (1024 * 1024)
+        }MB`
+      );
+      addFileUploadRef.current?.clear();
+      return;
+    }
+
+    setAddImageFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (ev) =>
+      setAddImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }}
+/>
+
+
                 {addImageError && (
                   <small className="text-red-500">{addImageError}</small>
                 )}

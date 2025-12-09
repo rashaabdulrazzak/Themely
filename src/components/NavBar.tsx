@@ -20,10 +20,10 @@ const logOut = () =>{
     {
         label: 'Rasha',
         items: [
-            {
+             /*      {
                 label: 'My Profile',
                 icon: 'pi pi-user',
-            },
+            }, */
             {
                 label: 'Log Out',
                 icon: 'pi pi pi-sign-out',
@@ -35,9 +35,9 @@ const logOut = () =>{
     const start = <SideBar/>
 const end = (
   <div className="flex items-center space-x-3 pr-6 ml-6" >
-    <i
+ {/*    <i
       className="pi pi-bell text-lg cursor-pointer"
-    ></i>
+    ></i> */}
 
     <Avatar
       image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"

@@ -5,8 +5,9 @@ import { handleError, handleResponse } from './handleResponse';
 import type { Canvas, Template, User } from '../modules';
 
 // Don't bake the token at creation time; it'll get stale.
+// https://server.thimly.com/api/v1
 const api = axios.create({
-  baseURL: 'http://localhost:5001/api/v1',
+  baseURL: 'https://server.thimly.com/api/v1',
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -43,6 +44,8 @@ export const authLogin = async (loginData: { email: string; password: string }) 
     console.log('authLogin: Attempting login for:', loginData.email);
     
     const response = await api.post('/auth/login', loginData);
+
+    console.log('authLogin: Response received:', response);
     const data = handleResponse(response, undefined, 'Post');
 
     // Extract token from different possible locations  
@@ -344,8 +347,9 @@ export const editTemplateWithFile = async (templateData: Template, imageFile: Fi
     
       transformRequest: [(data) => data], 
     });
+    console.log('response',response)
 
-    return handleResponse(response,'post');
+   // return handleResponse(response,'post');
     
   } catch (error) {
     handleError(error);
@@ -532,6 +536,11 @@ export async function getAnalytics() {
   //const token = localStorage.getItem("token"); // your stored JWT token
    console.log("Fetching analatics...");
   const response = await api.get('/analytics' );
+  console.log("Analytics response:", response);
+  if (response.status !== 200) {
+    throw new Error(`Failed to fetch analytics: ${response.statusText}`);
+  }
+  //console.log("Analytics data:", response.data);
    console.log("Fetching analatics result...",response);
 
   return handleResponse(response);

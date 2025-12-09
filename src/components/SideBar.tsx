@@ -4,7 +4,7 @@ import { Avatar } from 'primereact/avatar';
 import { useState } from 'react';
 import { PanelMenu } from 'primereact/panelmenu';
 import { navbarConfig, navbarConfigLower, getPanelMenuItems } from '../config/config';
-import { useAuth } from '../contexts/AuthContext'; // Import useAuth hook
+import { useAuth } from '../contexts/AuthContext'; 
 
 const SideBar = () => {
   const [visible, setVisible] = useState(false);
