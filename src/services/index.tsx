@@ -132,27 +132,29 @@ export const getTemplatesbyId = async (id:string) => {
 }; */
 
 
-export const getTemplates = async (page: number = 1) => {
+export const getTemplates = async (page: number = 1,category:string) => {
   try {
     console.log("Using manual authorization header...");
     
     const token = localStorage.getItem('token');
+    const category1 = category.toUpperCase()
     
     if (!token) {
       throw new Error("No token available");
     }
-    
+    const params = {
+    page,
+    limit: 10  ,
+    ...(category ? { category1 } : {}), 
+  };
     const response = await api.get('/template/all', {
       headers: {
         'Authorization': `Bearer ${token}`
       },
-      params: {
-        page,
-        limit: 10   
-      }
+      params,
     });
     
-    console.log("✅ Manual header SUCCESS:", response.status);
+    console.log("✅ Manual header SUCCESS:", response);
     return handleResponse(response);
     
   } catch (error: any) {
@@ -240,7 +242,7 @@ export const deleteDownload = async (id:string) => {
     const response = await api.delete(`/download/${id}`);
     console.log("download ...",response);
 
-    return handleResponse(response);
+    return handleResponse(response); 
   } catch (error) {
     handleError(error);
     throw error;
@@ -349,7 +351,7 @@ export const editTemplateWithFile = async (templateData: Template, imageFile: Fi
     });
     console.log('response',response)
 
-   // return handleResponse(response,'post');
+   return handleResponse(response,'post');
     
   } catch (error) {
     handleError(error);

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -20,19 +19,17 @@ import type { IPagination, Template } from "../modules";
 import { Toast } from "primereact/toast";
 import { InputNumber } from "primereact/inputnumber";
 import { FileUpload } from "primereact/fileupload";
-// Create a helper function to handle image URLs
+
+// helper function to handle image URLs
 const getImageUrl = (imagePath: string): string => {
   if (!imagePath) return "";
 
-  // If it's already a full URL, return as-is
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
     return imagePath;
   }
 
-  // If it's a relative path, prepend your SERVER base URL (port 5001)
-  const SERVER_BASE_URL = "https://server.thimly.com/uploads/";
+  const SERVER_BASE_URL = import.meta.env.VITE_SERVER_URL_UPLOAD;
 
-  // Handle both "/uploads/..." and "uploads/..." paths
   const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
 
   return `${SERVER_BASE_URL}${cleanPath}`;
@@ -73,7 +70,6 @@ const Templates: React.FC = () => {
   );
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1); // current page
-  const [limit, setLimit] = useState(10); // items per page
   const [totalRecords, setTotalRecords] = useState(0);
   const [first, setFirst] = useState(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -95,12 +91,11 @@ const Templates: React.FC = () => {
   const [addImagePreview, setAddImagePreview] = useState<string | null>(null);
   const [addUploadLoading, setAddUploadLoading] = useState(false);
   const [addImageError, setAddImageError] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+
   const user = localStorage.getItem("user");
   const addFileUploadRef = useRef<FileUpload | null>(null);
 
-
-  console.log("Current user from localStorage:", user);
-  console.log("Parsing user...", user ? JSON.parse(user) : null);
   const userRole = user ? JSON.parse(user).role : null;
   const basePage = 1;
   const [pagination, setPagination] = useState<IPagination>();
@@ -124,89 +119,27 @@ const Templates: React.FC = () => {
   ];
   const [categories, setCategories] = useState<string[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
-  /*   const openEditDialog = useCallback((tpl: Template) => {
-  setDialog({ type: 'edit', data: tpl });
-}, []); */
+  
   const openEditDialog = (tpl: Template) => {
-    console.log("🔍 Opening edit dialog for:", tpl);
-    console.log("Category type:", typeof tpl.category);
-    console.log("Category value:", tpl.category);
-
     setSelectedTemplate({ ...tpl });
     setEditDialog(true);
     setTimeout(() => setEditDialog(true), 0);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("🔍 handleImageChange called");
-    const file = e.target.files?.[0];
-    console.log("File from input:", file);
-
-    setImageError(null);
-
-    if (!file) {
-      console.log("❌ No file selected");
-      setImageFile(null);
-      setImagePreview(null);
-      return;
-    }
-
-    // Validate file type
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      console.log("❌ Invalid file type:", file.type);
-      setImageError(
-        "Please select a valid image file (JPEG, PNG, WebP, or GIF)"
-      );
-      return;
-    }
-
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      console.log("❌ File too large:", file.size);
-      setImageError(
-        `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`
-      );
-      return;
-    }
-
-    console.log("✅ File validation passed");
-    console.log("Setting imageFile state to:", file);
-
-    // Set the file state
-    setImageFile(file);
-
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const preview = e.target?.result as string;
-      console.log("✅ Preview created:", preview?.substring(0, 50) + "...");
-      setImagePreview(preview);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleSave = async () => {
-    console.log("🚀 handleSave called");
-    console.log("selectedTemplate:", selectedTemplate);
-    console.log("imageFile state:", imageFile);
 
     if (selectedTemplate) {
       setUploadLoading(true);
       try {
-        console.log("📤 Calling editTemplate with:", {
-          templateData: selectedTemplate,
-          imageFile: imageFile,
-        });
 
         const updatedTemplate = await editTemplateWithFile(
           selectedTemplate,
           imageFile
         );
-        console.log("✅ Updated template:", updatedTemplate);
-
-        setTemplates((prev) =>
+        
+        setTemplates((prev: Template[]) =>
           prev.map((t) => (t.id === updatedTemplate.id ? updatedTemplate : t))
-        );
+        ); 
 
         // Reset state
         setEditDialog(false);
@@ -219,7 +152,9 @@ const Templates: React.FC = () => {
         toast.current?.show({
           severity: "success",
           summary: "Successful",
-          detail: `Template "${updatedTemplate?.nameEn || ''} " updated successfully`,
+          detail: `Template "${
+            updatedTemplate?.nameEn || ""
+          } " updated successfully`,
           life: 3000,
         });
       } catch (error) {
@@ -236,7 +171,6 @@ const Templates: React.FC = () => {
         setUploadLoading(false);
       }
     } else {
-      console.log("❌ No selectedTemplate");
       toast.current?.show({
         severity: "warn",
         summary: "Warning",
@@ -298,13 +232,10 @@ const Templates: React.FC = () => {
     const fetchCategories = async () => {
       setCategoriesLoading(true);
       try {
-        console.log("Fetching categories from API...");
         const response = await getCategories();
         setCategories(response);
-        console.log("Fetched categories:", response);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
-        // Fallback to hardcoded categories
         setCategories([
           "MARRIAGE",
           "BIRTHDAY",
@@ -321,33 +252,28 @@ const Templates: React.FC = () => {
     fetchCategories();
   }, []);
   useEffect(() => {
-    // Fetch templates from API (expects an array of Template)
-
-    getTemplates(basePage)
+    getTemplates(basePage, categoryFilter)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((res: any) => {
         // Accept either res.data or res
-        console.log("Fetched templates:", res.pagination);
         const data = Array.isArray(res) ? res : res?.data;
         if (Array.isArray(data) && data.length) {
-          console.log("Fetched templates:", res.data || res);
           setTemplates(data);
           setTotalRecords(res.pagination.total_items || data.length);
           setPagination(res.pagination);
           setCurrentPage(res.pagination.page);
           setTotalPages(res.pagination.totalPages);
         } else {
-          // Use sample data if API returns empty or invalid data
           setTemplates(sampleTemplates);
         }
         setLoading(false);
       })
       .catch((err: unknown) => {
         console.error("Error fetching templates:", err);
-        // Use sample templates on error as a graceful fallback
         setTemplates(sampleTemplates);
         setLoading(false);
       });
-  }, []);
+  }, [page, categoryFilter]);
   // Function to open confirmation dialog
   const confirmDeleteSelected = () => {
     if (selectedTemplates.length === 0) {
@@ -452,6 +378,7 @@ const Templates: React.FC = () => {
     setDeleteProductDialog(false);
     setTemplateToDelete(null);
   };
+
   const openAddDialog = () => {
     const currentUserId = user ? JSON.parse(user).id : "";
 
@@ -469,14 +396,15 @@ const Templates: React.FC = () => {
     setAddImagePreview(null);
     setAddImageError(null);
   };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onPageInputChange = (event: any) => {
     const current = event.value;
     setPageNo(current);
   };
   const onPageChange = (text: string) => {
     let currentPage = 1;
-    console.log("onPageChange called with:", text);
-    console.log("Current pagination state:", pagination!.page);
+    
     switch (text) {
       case "next":
         currentPage = pagination!.page + 1;
@@ -497,8 +425,7 @@ const Templates: React.FC = () => {
         break;
       // Default case
     }
-    getTemplates(currentPage).then((newTemplates) => {
-      console.log("newTemplates", newTemplates);
+    getTemplates(currentPage, categoryFilter).then((newTemplates) => {
       setTemplates(newTemplates);
       setPagination(newTemplates!.pagination);
       setCurrentPage(currentPage);
@@ -506,7 +433,7 @@ const Templates: React.FC = () => {
     });
     setPage(currentPage);
   };
-  console.log("templates", templates);
+
   const paginatorTemplate = {
     layout:
       " FirstPageLink PrevPageLink CurrentPageReport  NextPageLink LastPageLink JumpToPageInput",
@@ -661,7 +588,7 @@ const Templates: React.FC = () => {
             onPage={(e) => {
               const newPage = Math.floor(e.first / e.rows) + 1;
               setPage(newPage);
-              setLimit(e.rows);
+             
               setFirst(e.first);
             }}
             paginatorTemplate={paginatorTemplate}
@@ -709,16 +636,39 @@ const Templates: React.FC = () => {
               header="Category"
               sortable
               filter
-              filterElement={
+              showFilterMenu={false}
+              filterElement={(options) => (
                 <Dropdown
-                  value={null}
+                  value={categoryFilter}
                   options={categories}
                   placeholder="All"
-                  onChange={() => {}}
+                  onChange={(e) => {
+                    const value = e.value || null;
+
+                    // update local state
+                    setCategoryFilter(value);
+
+                    options.filterApplyCallback(value);
+
+                    setPage(1);
+                    setFirst(0);
+
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    getTemplates(1, value).then((res: any) => {
+                      const data = Array.isArray(res) ? res : res?.data;
+                      setTemplates(data);
+                      setPagination(res.pagination);
+                      setCurrentPage(1);
+                      setTotalPages(res.pagination.totalPages);
+                      setTotalRecords(
+                        res.pagination.total_items || data.length
+                      );
+                    });
+                  }}
                   className="p-column-filter"
                   showClear
                 />
-              }
+              )}
             />
 
             <Column
@@ -746,7 +696,7 @@ const Templates: React.FC = () => {
             />
           </DataTable>
         </div>
-
+        {/* Edit Dialog */}
         <Dialog
           header="Edit Template"
           visible={editDialog}
@@ -834,14 +784,6 @@ const Templates: React.FC = () => {
                   </div>
                 )}
 
-                {/* File input */}
-                {/*  <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  disabled={uploadLoading}
-                  className="text-sm  "
-                /> */}
                 <FileUpload
                   ref={addFileUploadRef}
                   mode="basic"
@@ -849,8 +791,9 @@ const Templates: React.FC = () => {
                   chooseLabel="Choose Image"
                   accept="image/*"
                   maxFileSize={MAX_FILE_SIZE}
-                  customUpload 
+                  customUpload
                   auto={false}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onSelect={(e: any) => {
                     const file = e.files?.[0] as File | undefined;
                     setImageError(null);
@@ -865,7 +808,7 @@ const Templates: React.FC = () => {
                       setImageError(
                         "Please select a valid image file (JPEG, PNG, WebP, or GIF)"
                       );
-                       addFileUploadRef.current?.clear();
+                      addFileUploadRef.current?.clear();
                       return;
                     }
 
@@ -875,7 +818,7 @@ const Templates: React.FC = () => {
                           MAX_FILE_SIZE / (1024 * 1024)
                         }MB`
                       );
-                       addFileUploadRef.current?.clear();
+                      addFileUploadRef.current?.clear();
                       return;
                     }
 
@@ -1121,89 +1064,55 @@ const Templates: React.FC = () => {
                     </p>
                   </div>
                 )}
-               {/*  <input
-                  type="file"
+                <FileUpload
+                  ref={addFileUploadRef}
+                  mode="basic"
+                  name="addTemplateImage"
+                  chooseLabel="Choose Image"
                   accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
+                  customUpload
+                  auto={false}
+                  maxFileSize={MAX_FILE_SIZE}
+                  disabled={addUploadLoading}
+                  className="text-sm"
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  onSelect={(e: any) => {
+                    const file = e.files?.[0] as File | undefined;
                     setAddImageError(null);
+
                     if (!file) {
                       setAddImageFile(null);
                       setAddImagePreview(null);
                       return;
                     }
+
                     if (!ALLOWED_TYPES.includes(file.type)) {
                       setAddImageError(
                         "Please select a valid image file (JPEG, PNG, WebP, or GIF)"
                       );
+
+                      addFileUploadRef.current?.clear();
                       return;
                     }
+
                     if (file.size > MAX_FILE_SIZE) {
                       setAddImageError(
                         `File size must be less than ${
                           MAX_FILE_SIZE / (1024 * 1024)
                         }MB`
                       );
+                      addFileUploadRef.current?.clear();
                       return;
                     }
+
                     setAddImageFile(file);
+
                     const reader = new FileReader();
-                    reader.onload = (e) =>
-                      setAddImagePreview(e.target?.result as string);
+                    reader.onload = (ev) =>
+                      setAddImagePreview(ev.target?.result as string);
                     reader.readAsDataURL(file);
                   }}
-                  disabled={addUploadLoading}
-                  className="text-sm"
-                /> */}
-               <FileUpload
-  ref={addFileUploadRef}
-  mode="basic"
-  name="addTemplateImage"
-  chooseLabel="Choose Image"
-  accept="image/*"
-  customUpload
-  auto={false}
-  maxFileSize={MAX_FILE_SIZE}
-  disabled={addUploadLoading}
-  className="text-sm"
-  onSelect={(e: any) => {
-    const file = e.files?.[0] as File | undefined;
-    setAddImageError(null);
-
-    if (!file) {
-      setAddImageFile(null);
-      setAddImagePreview(null);
-      return;
-    }
-
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      setAddImageError(
-        "Please select a valid image file (JPEG, PNG, WebP, or GIF)"
-      );
-      
-      addFileUploadRef.current?.clear();
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      setAddImageError(
-        `File size must be less than ${
-          MAX_FILE_SIZE / (1024 * 1024)
-        }MB`
-      );
-      addFileUploadRef.current?.clear();
-      return;
-    }
-
-    setAddImageFile(file);
-
-    const reader = new FileReader();
-    reader.onload = (ev) =>
-      setAddImagePreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
-  }}
-/>
-
+                />
 
                 {addImageError && (
                   <small className="text-red-500">{addImageError}</small>
@@ -1276,9 +1185,7 @@ const Templates: React.FC = () => {
                         newTemplate,
                         addImageFile
                       );
-                      console.log("✅ Created template:", result);
-
-                      // ✅ result is already the template object
+                     
                       setTemplates((prev) => [result, ...prev]);
 
                       setAddDialog(false);
