@@ -96,8 +96,8 @@ const Downloads: React.FC = () => {
       if (!downloadToDelete) return;
   
       try {
-        await deleteDownload(downloadToDelete.id.toString());
-  
+       const response = await deleteDownload(downloadToDelete.id.toString());
+        
         // Update the state
         setRows((prev) => prev.filter((t) => t.id !== downloadToDelete.id));
   
