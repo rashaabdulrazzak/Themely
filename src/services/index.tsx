@@ -5,6 +5,7 @@ import { handleError, handleResponse } from './handleResponse';
 import type { Canvas, Template, User } from '../modules';
 
 // Don't bake the token at creation time; it'll get stale.
+// https://server.thimly.com/api/v1
 const api = axios.create({
   baseURL: 'https://server.thimly.com/api/v1',
   headers: { 'Content-Type': 'application/json' },
@@ -44,6 +45,8 @@ export const authLogin = async (loginData: { email: string; password: string }) 
     console.log('authLogin: Attempting login for:', loginData.email);
     
     const response = await api.post('/auth/login', loginData);
+
+    console.log('authLogin: Response received:', response);
     const data = handleResponse(response, undefined, 'Post');
 
     // Extract token from different possible locations  
@@ -130,27 +133,29 @@ export const getTemplatesbyId = async (id:string) => {
 }; */
 
 
-export const getTemplates = async (page: number = 1) => {
+export const getTemplates = async (page: number = 1,category:string) => {
   try {
     console.log("Using manual authorization header...");
     
     const token = localStorage.getItem('token');
+    const category1 = category.toUpperCase()
     
     if (!token) {
       throw new Error("No token available");
     }
-    
+    const params = {
+    page,
+    limit: 10  ,
+    ...(category ? { category1 } : {}), 
+  };
     const response = await api.get('/template/all', {
       headers: {
         'Authorization': `Bearer ${token}`
       },
-      params: {
-        page,
-        limit: 10   
-      }
+      params,
     });
     
-    console.log("✅ Manual header SUCCESS:", response.status);
+    console.log("✅ Manual header SUCCESS:", response);
     return handleResponse(response);
     
   } catch (error: any) {
@@ -238,7 +243,7 @@ export const deleteDownload = async (id:string) => {
     const response = await api.delete(`/download/${id}`);
     console.log("download ...",response);
 
-    return handleResponse(response);
+    return handleResponse(response); 
   } catch (error) {
     handleError(error);
     throw error;
@@ -345,8 +350,9 @@ export const editTemplateWithFile = async (templateData: Template, imageFile: Fi
     
       transformRequest: [(data) => data], 
     });
+    console.log('response',response)
 
-    return handleResponse(response,'post');
+   return handleResponse(response,'post');
     
   } catch (error) {
     handleError(error);
@@ -533,6 +539,11 @@ export async function getAnalytics() {
   //const token = localStorage.getItem("token"); // your stored JWT token
    console.log("Fetching analatics...");
   const response = await api.get('/analytics' );
+  console.log("Analytics response:", response);
+  if (response.status !== 200) {
+    throw new Error(`Failed to fetch analytics: ${response.statusText}`);
+  }
+  //console.log("Analytics data:", response.data);
    console.log("Fetching analatics result...",response);
 
   return handleResponse(response);
