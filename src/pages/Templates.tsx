@@ -31,7 +31,7 @@ const getImageUrl = (imagePath: string): string => {
   }
 
   // If it's a relative path, prepend your SERVER base URL (port 5001)
-  const SERVER_BASE_URL = "http://localhost:5001";
+  const SERVER_BASE_URL = "https://server.thimly.com/uploads";
 
   // Handle both "/uploads/..." and "uploads/..." paths
   const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;

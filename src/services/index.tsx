@@ -6,8 +6,9 @@ import type { Canvas, Template, User } from '../modules';
 
 // Don't bake the token at creation time; it'll get stale.
 const api = axios.create({
-  baseURL: 'http://localhost:5001/api/v1',
+  baseURL: 'https://server.thimly.com/api/v1',
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true, // Enable sending cookies with CORS requests
 });
 
 // 1) Always attach the latest token at request time
