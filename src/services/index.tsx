@@ -8,7 +8,9 @@ import type { Canvas, Template, User } from '../modules';
 // https://server.thimly.com/api/v1
 const api = axios.create({
   baseURL: 'https://server.thimly.com/api/v1',
+  // baseURL: 'http://localhost:3001/api/v1',
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true, // Enable sending cookies with CORS requests
 });
 
 // 1) Always attach the latest token at request time
@@ -132,21 +134,22 @@ export const getTemplatesbyId = async (id:string) => {
 }; */
 
 
-export const getTemplates = async (page: number = 1,category:string) => {
+export const getTemplates = async (page: number = 1, category?: string | null) => {
   try {
     console.log("Using manual authorization header...");
     
     const token = localStorage.getItem('token');
-    const category1 = category.toUpperCase()
     
     if (!token) {
       throw new Error("No token available");
     }
-    const params = {
-    page,
-    limit: 10  ,
-    ...(category ? { category1 } : {}), 
-  };
+    const params: Record<string, unknown> = {
+      page,
+      limit: 10,
+    };
+    if (category && category !== "all") {
+      params.category = category.toUpperCase();
+    }
     const response = await api.get('/template/all', {
       headers: {
         'Authorization': `Bearer ${token}`
