@@ -98,7 +98,6 @@ const Templates: React.FC = () => {
   const addFileUploadRef = useRef<FileUpload | null>(null);
 
   const userRole = user ? JSON.parse(user).role : null;
-  const basePage = 1;
   const [pagination, setPagination] = useState<IPagination>();
   // const [first, setFirst] = useState(0);
   const [pageNo, setPageNo] = useState<number>(pagination?.page || 0);
@@ -253,7 +252,7 @@ const Templates: React.FC = () => {
     fetchCategories();
   }, []);
   useEffect(() => {
-    getTemplates(basePage, categoryFilter)
+    getTemplates(page, categoryFilter)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((res: any) => {
         // Accept either res.data or res
@@ -426,11 +425,12 @@ const Templates: React.FC = () => {
         break;
       // Default case
     }
-    getTemplates(currentPage, categoryFilter).then((newTemplates) => {
-      setTemplates(newTemplates);
-      setPagination(newTemplates!.pagination);
+    getTemplates(currentPage, categoryFilter).then((res) => {
+      const data = Array.isArray(res) ? res : res?.data;
+      setTemplates(data);
+      setPagination(res!.pagination);
       setCurrentPage(currentPage);
-      setTotalPages(newTemplates!.pagination.totalPages);
+      setTotalPages(res!.pagination.totalPages);
     });
     setPage(currentPage);
   };
@@ -645,26 +645,10 @@ const Templates: React.FC = () => {
                   placeholder="All"
                   onChange={(e) => {
                     const value = e.value || null;
-
-                    // update local state
                     setCategoryFilter(value);
-
                     options.filterApplyCallback(value);
-
                     setPage(1);
                     setFirst(0);
-
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    getTemplates(1, value).then((res: any) => {
-                      const data = Array.isArray(res) ? res : res?.data;
-                      setTemplates(data);
-                      setPagination(res.pagination);
-                      setCurrentPage(1);
-                      setTotalPages(res.pagination.totalPages);
-                      setTotalRecords(
-                        res.pagination.total_items || data.length
-                      );
-                    });
                   }}
                   className="p-column-filter"
                   showClear
