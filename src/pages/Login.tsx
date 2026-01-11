@@ -66,7 +66,7 @@ const Login = () => {
     <div className="flex flex-nowrap login-form-container">
       <form className="" onSubmit={loginform.handleSubmit}>
         <div className="login-container">
-          <h1 className="font-bold">Themely Login</h1>
+          <h1 className="font-bold">Thimly Login</h1>
 
           <div className="login-form">
             {/* Display login error if exists */}

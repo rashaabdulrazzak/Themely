@@ -1,6 +1,6 @@
 import { type EmptyData } from "../modules/app.modules";
-import storeImage from "../assets/log.png";
-import itemImage from "../assets/log.png";
+import storeImage from "../assets/storeItem.jpg";
+import itemImage from "../assets/storeItem.jpg";
 
 export const emptyData: EmptyData = {
   products: {
